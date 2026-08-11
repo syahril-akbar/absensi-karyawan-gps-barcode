@@ -9,7 +9,7 @@ Aplikasi web absensi karyawan menggunakan QR Code dan GPS.
 
 ## Teknologi yang Digunakan
 
-- [Laravel 11](https://laravel.com/)
+- [Laravel 11/12](https://laravel.com/)
 - [Laravel Jetstream](https://jetstream.laravel.com/)
 - [Endroid QR Code](https://github.com/endroid/qr-code)
 - [Leaflet.js](https://leafletjs.com/)
@@ -22,8 +22,8 @@ Aplikasi web absensi karyawan menggunakan QR Code dan GPS.
 
 - [Composer](https://getcomposer.org)
 - [NPM & Node.js](https://nodejs.org) atau [Bun](https://bun.com/)
-- PHP 8.3
-- MySQL/MariaDB
+- PHP 8.3+
+- MySQL/MariaDB/SQlite
 
 ---
 

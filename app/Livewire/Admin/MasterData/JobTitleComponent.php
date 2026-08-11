@@ -76,6 +76,15 @@ class JobTitleComponent extends Component
             return abort(403);
         }
         $jobTitle = JobTitle::find($this->selectedId);
+
+        if ($jobTitle->users()->exists()) {
+            $this->confirmingDeletion = false;
+            $this->selectedId = null;
+            $this->deleteName = null;
+            $this->dangerBanner(__('Cannot delete because there are employees using this job title.'));
+            return;
+        }
+
         $jobTitle->delete();
         $this->confirmingDeletion = false;
         $this->selectedId = null;

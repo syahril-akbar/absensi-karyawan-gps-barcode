@@ -76,6 +76,15 @@ class EducationComponent extends Component
             return abort(403);
         }
         $education = Education::find($this->selectedId);
+
+        if ($education->users()->exists()) {
+            $this->confirmingDeletion = false;
+            $this->selectedId = null;
+            $this->deleteName = null;
+            $this->dangerBanner(__('Cannot delete because there are employees using this education.'));
+            return;
+        }
+
         $education->delete();
         $this->confirmingDeletion = false;
         $this->selectedId = null;

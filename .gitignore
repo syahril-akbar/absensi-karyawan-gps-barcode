@@ -19,3 +19,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+/.user.ini
+/404.html
+/index.html
+/public/index.html

@@ -81,6 +81,15 @@ class EmployeeComponent extends Component
     public function delete()
     {
         $user = User::find($this->selectedId);
+
+        if ($user->attendances()->exists()) {
+            $this->confirmingDeletion = false;
+            $this->selectedId = null;
+            $this->deleteName = null;
+            $this->dangerBanner(__('Cannot delete because this employee has attendance records.'));
+            return;
+        }
+
         $this->form->setUser($user)->delete();
         $this->confirmingDeletion = false;
         $this->banner(__('Deleted successfully.'));

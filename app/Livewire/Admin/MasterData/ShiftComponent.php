@@ -58,7 +58,16 @@ class ShiftComponent extends Component
     public function delete()
     {
         $shift = Shift::find($this->selectedId);
-        $this->form->setShift($shift)->delete();
+
+        if ($shift->attendances()->exists()) {
+            $this->confirmingDeletion = false;
+            $this->selectedId = null;
+            $this->deleteName = null;
+            $this->dangerBanner(__('Cannot delete because there are attendance records using this shift.'));
+            return;
+        }
+
+        $shift->delete();
         $this->confirmingDeletion = false;
         $this->banner(__('Deleted successfully.'));
     }

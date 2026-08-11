@@ -28,6 +28,15 @@ class BarcodeComponent extends Component
             return abort(403);
         }
         $barcode = Barcode::find($this->selectedId);
+
+        if ($barcode->attendances()->exists()) {
+            $this->confirmingDeletion = false;
+            $this->selectedId = null;
+            $this->deleteName = null;
+            $this->dangerBanner(__('Cannot delete because there are attendance records using this barcode.'));
+            return;
+        }
+
         $barcode->delete();
         $this->confirmingDeletion = false;
         $this->selectedId = null;

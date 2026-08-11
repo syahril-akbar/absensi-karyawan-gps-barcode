@@ -76,6 +76,15 @@ class DivisionComponent extends Component
             return abort(403);
         }
         $division = Division::find($this->selectedId);
+
+        if ($division->users()->exists()) {
+            $this->confirmingDeletion = false;
+            $this->selectedId = null;
+            $this->deleteName = null;
+            $this->dangerBanner(__('Cannot delete because there are employees using this division.'));
+            return;
+        }
+
         $division->delete();
         $this->confirmingDeletion = false;
         $this->selectedId = null;

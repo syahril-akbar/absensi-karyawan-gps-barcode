@@ -57,7 +57,7 @@ class AttendanceController extends Controller
                 if ($request->date) {
                     $attendances = new Collection(Cache::remember(
                         "attendance-$user->id-$request->date",
-                        now()->addDay(),
+                        now()->addSeconds(5),
                         function () use ($user, $request) {
                             $date = Carbon::parse($request->date);
 
@@ -85,7 +85,7 @@ class AttendanceController extends Controller
                 } else if ($request->week) {
                     $attendances = new Collection(Cache::remember(
                         "attendance-$user->id-$request->week",
-                        now()->addDay(),
+                        now()->addSeconds(5),
                         function () use ($user, $request) {
                             $start = Carbon::parse($request->week)->startOfWeek();
                             $end = Carbon::parse($request->week)->endOfWeek();
@@ -102,7 +102,7 @@ class AttendanceController extends Controller
                     $my = Carbon::parse($request->month);
                     $attendances = new Collection(Cache::remember(
                         "attendance-$user->id-$my->month-$my->year",
-                        now()->addDay(),
+                        now()->addSeconds(5),
                         function () use ($user, $my) {
                             /** @var Collection<Attendance>  */
                             $attendances = Attendance::where('user_id', $user->id)

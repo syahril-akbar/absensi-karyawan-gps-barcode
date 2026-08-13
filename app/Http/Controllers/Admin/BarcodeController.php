@@ -89,9 +89,10 @@ class BarcodeController extends Controller
     {
         $barcode = Barcode::find($barcodeId);
         $barcodeFile = (new BarcodeGenerator(width: 1280, height: 1280))->generateQrCode($barcode->value);
+        $filename = ($barcode->name ?? $barcode->value) . '.png';
         return response($barcodeFile)->withHeaders([
-            'Content-Type' => 'aplication/octet-stream',
-            'Content-Disposition' => 'attachment; filename=' . ($barcode->name ?? $barcode->value) . '.png',
+            'Content-Type' => 'application/octet-stream',
+            'Content-Disposition' => "attachment; filename=\"$filename\"; filename*=UTF-8''" . rawurlencode($filename),
         ]);
     }
 
@@ -108,7 +109,7 @@ class BarcodeController extends Controller
         );
 
         return response(file_get_contents($zipFile))->withHeaders([
-            'Content-Type' => 'aplication/octet-stream',
+            'Content-Type' => 'application/octet-stream',
             'Content-Disposition' => 'attachment; filename=barcodes.zip',
         ]);
     }

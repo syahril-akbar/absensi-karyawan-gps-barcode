@@ -96,7 +96,7 @@ class AttendanceComponent extends Component
                 if ($this->date) {
                     $attendances = new Collection(Cache::remember(
                         "attendance-$user->id-$this->date",
-                        now()->addDay(),
+                        now()->addSeconds(5),
                         function () use ($user) {
                             /** @var Collection<Attendance> */
                             $attendances = Attendance::filter(
@@ -124,7 +124,7 @@ class AttendanceComponent extends Component
                 } elseif ($this->week) {
                     $attendances = new Collection(Cache::remember(
                         "attendance-$user->id-$this->week",
-                        now()->addDay(),
+                        now()->addSeconds(5),
                         function () use ($user) {
                             /** @var Collection<Attendance> */
                             $attendances = Attendance::filter(
@@ -150,7 +150,7 @@ class AttendanceComponent extends Component
                     $my = Carbon::parse($this->month);
                     $attendances = new Collection(Cache::remember(
                         "attendance-$user->id-$my->month-$my->year",
-                        now()->addDay(),
+                        now()->addSeconds(5),
                         function () use ($user) {
                             /** @var Collection<Attendance> */
                             $attendances = Attendance::filter(

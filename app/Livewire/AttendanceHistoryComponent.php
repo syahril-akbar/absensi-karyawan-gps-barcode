@@ -31,7 +31,7 @@ class AttendanceHistoryComponent extends Component
 
         $attendances = new Collection(Cache::remember(
             "attendance-$user->id-$date->month-$date->year",
-            now()->addDay(),
+            now()->addSeconds(5),
             function () use ($user) {
                 /** @var Collection<Attendance> */
                 $attendances = Attendance::filter(

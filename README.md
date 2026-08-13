@@ -1,7 +1,5 @@
 # Aplikasi Web Absensi Karyawan QR Code GPS
 
-[![.github/workflows/laravel.yml](https://github.com/ikhsan3adi/absensi-karyawan-gps-barcode/actions/workflows/laravel.yml/badge.svg)](https://github.com/ikhsan3adi/absensi-karyawan-gps-barcode/actions/workflows/laravel.yml)
-
 | ![Aplikasi Web Absensi Karyawan QR Code GPS](./screenshots/absensi-gps-barcode-social-preview.png) |
 | -------------------------------------------------------------------------------------------------- |
 
@@ -142,12 +140,5 @@ Pengajuan izin tidak langsung disetujui, melainkan melalui proses approval:
 3. Admin menyetujui atau menolak pengajuan
 4. Jika disetujui, data absensi otomatis terisi untuk rentang tanggal tersebut
 5. Karyawan dapat melihat status pengajuannya di halaman Riwayat Izin
-
-## Donasi ❤
-
-[![Donate trakteer](https://img.shields.io/badge/Donate-Trakteer-red?style=for-the-badge&link=https%3A%2F%2Ftrakteer.id%2Fikhsan3adi%2Ftip)](https://trakteer.id/ikhsan3adi/tip)
-[![Donate saweria](https://img.shields.io/badge/Donate-Saweria-red?style=for-the-badge&link=https%3A%2F%2Fsaweria.co%2Fxiboxann)](https://saweria.co/xiboxann)
-
-Atau, beri star...⭐⭐⭐⭐
 
 <!-- ![Aplikasi Web Absensi Karyawan QR Code GPS](./screenshots/hero.png) -->

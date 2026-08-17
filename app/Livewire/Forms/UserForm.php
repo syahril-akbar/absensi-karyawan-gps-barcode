@@ -59,7 +59,7 @@ class UserForm extends Form
             'division_id' => ['nullable', 'exists:divisions,id'],
             'education_id' => ['nullable', 'exists:educations,id'],
             'job_title_id' => ['nullable', 'exists:job_titles,id'],
-            'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
+            'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:5120'],
         ];
     }
 

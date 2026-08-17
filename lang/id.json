@@ -41,6 +41,8 @@
     "status_incomplete": "Tidak Tuntas",
     "status_absent-alpha": "Absen",
     "status_incomplete-early": "Pulang Cepat",
+    "status_holiday": "Libur",
+    "Weekend": "Sabtu/Minggu",
     "Coordinate": "Koordinat",
     "Choose from map": "Pilih dari maps",
     "Created successfully.": "Berhasil dibuat.",

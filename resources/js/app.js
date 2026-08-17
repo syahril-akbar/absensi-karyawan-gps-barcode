@@ -1,5 +1,13 @@
 import './bootstrap';
 
+Alpine.store('sidebar', {
+    collapsed: localStorage.getItem('sidebarCollapsed') === '1',
+    toggle() {
+        this.collapsed = !this.collapsed;
+        localStorage.setItem('sidebarCollapsed', this.collapsed ? '1' : '0');
+    },
+});
+
 Alpine.store('darkMode', {
     on: localStorage.getItem('isDark') === 'true',
     init() {
@@ -14,6 +22,48 @@ Alpine.store('darkMode', {
             document.documentElement.classList.remove('dark');
     }
 });
+
+Alpine.data('installPrompt', () => ({
+    deferredPrompt: null,
+    canInstall: false,
+    ios: false,
+    iosHelp: false,
+    show: false,
+    init() {
+        const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+        if (isStandalone) {
+            this.show = false;
+            return;
+        }
+
+        this.ios = isIos;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            this.deferredPrompt = e;
+            this.canInstall = true;
+            this.show = true;
+        });
+
+        window.addEventListener('appinstalled', () => {
+            this.show = false;
+            this.canInstall = false;
+        });
+
+        if (this.ios) {
+            this.show = true;
+        }
+    },
+    async install() {
+        if (!this.deferredPrompt) return;
+        this.deferredPrompt.prompt();
+        await this.deferredPrompt.userChoice;
+        this.deferredPrompt = null;
+        this.canInstall = false;
+    },
+}));
 
 let map;
 

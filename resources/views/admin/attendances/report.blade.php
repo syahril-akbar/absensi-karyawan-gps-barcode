@@ -164,9 +164,9 @@
           @endphp
           @foreach ($dates as $date)
             @php
-              $isWeekend = $date->isWeekend();
+              $isHoliday = \App\Helpers::isHoliday($date);
               $status = ($attendances->firstWhere(fn($v, $k) => $v['date'] === $date->format('Y-m-d')) ?? [
-                  'status' => $isWeekend || !$date->isPast() ? '-' : 'absent',
+                  'status' => $isHoliday ? 'holiday' : (!$date->isPast() ? '-' : 'absent'),
               ])['status'];
               switch ($status) {
                   case 'present':
@@ -192,6 +192,9 @@
                   case 'absent':
                       $shortStatus = 'A';
                       $absentCount++;
+                      break;
+                  case 'holiday':
+                      $shortStatus = 'L';
                       break;
                   default:
                       $shortStatus = '-';

@@ -24,8 +24,8 @@
           break;
   }
   $classes = $active
-      ? 'relative inline-flex items-center px-1 pt-1 border-b-2 border-indigo-400 dark:border-indigo-600 text-sm font-medium leading-5 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-indigo-700 transition duration-150 ease-in-out cursor-pointer'
-      : 'relative inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700 focus:outline-none focus:text-gray-700 dark:focus:text-gray-300 focus:border-gray-300 dark:focus:border-gray-700 transition duration-150 ease-in-out cursor-pointer';
+      ? 'relative inline-flex items-center rounded-full bg-indigo-50 px-3.5 py-2 text-sm font-semibold leading-5 text-indigo-700 transition duration-150 ease-in-out cursor-pointer dark:bg-indigo-900/50 dark:text-indigo-300'
+      : 'relative inline-flex items-center rounded-full px-3.5 py-2 text-sm font-medium leading-5 text-gray-600 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-900 cursor-pointer dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200';
 @endphp
 
 <div {{ $attributes->merge(['class' => $classes]) }} x-data="{ open: false }" @click.away="open = false"
@@ -38,9 +38,9 @@
       x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100"
       x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100"
       x-transition:leave-end="transform opacity-0 scale-95"
-      class="{{ $alignmentClasses }} {{ $dropdownClasses }} absolute z-50 mt-2 rounded-md shadow-lg"
+      class="{{ $alignmentClasses }} {{ $dropdownClasses }} absolute z-50 mt-2 rounded-2xl bg-white p-1.5 shadow-lg shadow-gray-200/50 ring-1 ring-gray-100 dark:bg-gray-800 dark:shadow-gray-900/50 dark:ring-gray-700"
       style="display: none;" @click="open = false">
-      <div class="{{ $contentClasses }} rounded-md ring-1 ring-black ring-opacity-5">
+      <div class="{{ $contentClasses }} rounded-xl">
         {{ $content }}
       </div>
     </div>

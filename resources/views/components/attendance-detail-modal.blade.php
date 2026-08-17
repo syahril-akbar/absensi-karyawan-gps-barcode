@@ -4,74 +4,110 @@
       @php
         $isExcused = $currentAttendance['status'] == 'excused' || $currentAttendance['status'] == 'sick';
         $showMap = $currentAttendance['latitude'] && $currentAttendance['longitude'] && !$isExcused;
+        $statusPill = [
+            'present' => 'bg-green-100 text-green-700 dark:bg-green-900/60 dark:text-green-200',
+            'late' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-200',
+            'excused' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-200',
+            'sick' => 'bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-200',
+            'incomplete' => 'bg-orange-100 text-orange-700 dark:bg-orange-900/60 dark:text-orange-200',
+            'absent' => 'bg-red-100 text-red-700 dark:bg-red-900/60 dark:text-red-200',
+        ][$currentAttendance['status']] ?? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200';
       @endphp
-      <h3 class="mb-3 text-xl font-semibold dark:text-white">{{ $currentAttendance['name'] }}</h3>
-      <div class="mb-3 w-full">
-        <x-label for="nip" value="{{ __('NIP') }}"></x-label>
-        <x-input type="text" class="w-full" id="nip" disabled value="{{ $currentAttendance['nip'] }}"></x-input>
+
+      <div class="flex items-center justify-between gap-3">
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ $currentAttendance['name'] }}</h3>
+        <span
+          class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold {{ $statusPill }}">
+          {{ __('status_' . $currentAttendance['status']) }}
+        </span>
       </div>
-      <div class="mb-3 flex w-full gap-3">
-        <div class="w-full">
-          <x-label for="date" value="{{ __('Date') }}"></x-label>
-          <x-input type="text" class="w-full" id="date" disabled
-            value="{{ $currentAttendance['date'] }}"></x-input>
+
+      <div class="mt-5 space-y-4">
+        <div>
+          <x-label for="nip" value="{{ __('NIP') }}" />
+          <x-input type="text" class="mt-1 w-full" id="nip" disabled value="{{ $currentAttendance['nip'] }}"></x-input>
         </div>
-        <div class="w-full">
-          <x-label for="status" value="{{ __('Status') }}"></x-label>
-          <x-input type="text" class="w-full" id="status" disabled
-            value="{{ __('status_' . $currentAttendance['status']) }}"></x-input>
+
+        <div class="flex w-full gap-3">
+          <div class="w-full">
+            <x-label for="date" value="{{ __('Date') }}" />
+            <x-input type="text" class="mt-1 w-full" id="date" disabled
+              value="{{ $currentAttendance['date'] }}"></x-input>
+          </div>
+          <div class="w-full">
+            <x-label for="status" value="{{ __('Status') }}" />
+            <x-input type="text" class="mt-1 w-full" id="status" disabled
+              value="{{ __('status_' . $currentAttendance['status']) }}"></x-input>
+          </div>
         </div>
-      </div>
-      @if ($isExcused)
-        <div class="mb-3 w-full">
-          <x-label for="address" value="{{ __('Address') }}" />
-          <x-input type="text" class="w-full" id="address" disabled value="{{ $currentAttendance['address'] }}" />
-        </div>
-      @endif
-      <div class="flex flex-col gap-3">
-        @if ($currentAttendance['attachment'])
-          <x-label for="attachment" value="{{ __('Attachment') }}"></x-label>
-          <img src="{{ $currentAttendance['attachment'] }}" alt="Attachment"
-            class="max-h-48 object-contain sm:max-h-64 md:max-h-72">
-        @endif
-        @if ($currentAttendance['note'])
-          <x-label for="note" value="Keterangan" />
-          <x-textarea type="text" id="note" disabled value="{{ $currentAttendance['note'] }}" />
-        @endif
-        @if ($showMap)
-          <x-label for="map" value="Koordinat Lokasi Absen"></x-label>
-          <p class="dark:text-gray-300">
-            {{ $currentAttendance['latitude'] }}, {{ $currentAttendance['longitude'] }}
-          </p>
-          <div class="my-2 h-52 w-full md:h-64" id="map"></div>
-        @endif
-        @if ($currentAttendance['time_in'] || $currentAttendance['time_out'])
-          <div class="grid grid-cols-2 gap-3">
-            <x-label for="time_in" value="Waktu Masuk"></x-label>
-            <x-label for="time_out" value="Waktu Keluar"></x-label>
-            <x-input type="text" id="time_in" disabled
-              value="{{ $currentAttendance['time_in'] ?? '-' }}"></x-input>
-            <x-input type="text" id="time_out" disabled
-              value="{{ $currentAttendance['time_out'] ?? '-' }}"></x-input>
+
+        @if ($isExcused)
+          <div>
+            <x-label for="address" value="{{ __('Address') }}" />
+            <x-input type="text" class="mt-1 w-full" id="address" disabled
+              value="{{ $currentAttendance['address'] }}" />
           </div>
         @endif
 
-        <div class="flex gap-3">
-          @if ($currentAttendance['shift'] ?? false)
-            <div class="w-full">
-              <x-label for="shift" value="Shift"></x-label>
-              <x-input class="w-full" type="text" id="shift" disabled
-                value="{{ $currentAttendance['shift']['name'] }}"></x-input>
+        @if ($currentAttendance['attachment'])
+          <div>
+            <x-label for="attachment" value="{{ __('Attachment') }}" />
+            <img src="{{ $currentAttendance['attachment'] }}" alt="Attachment"
+              class="mt-2 max-h-48 object-contain sm:max-h-64 md:max-h-72">
+          </div>
+        @endif
+
+        @if ($currentAttendance['note'])
+          <div>
+            <x-label for="note" value="Keterangan" />
+            <x-textarea type="text" id="note" disabled value="{{ $currentAttendance['note'] }}"
+              class="mt-1" />
+          </div>
+        @endif
+
+        @if ($showMap)
+          <div>
+            <x-label for="map" value="Koordinat Lokasi Absen" />
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-300">
+              {{ $currentAttendance['latitude'] }}, {{ $currentAttendance['longitude'] }}
+            </p>
+            <div class="isolate mt-2 h-52 w-full rounded-2xl md:h-64" id="map"></div>
+          </div>
+        @endif
+
+        @if ($currentAttendance['time_in'] || $currentAttendance['time_out'])
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <x-label for="time_in" value="Waktu Masuk" />
+              <x-input type="text" class="mt-1 w-full" id="time_in" disabled
+                value="{{ $currentAttendance['time_in'] ?? '-' }}"></x-input>
             </div>
-          @endif
-          @if ($currentAttendance['barcode'] ?? false)
-            <div class="w-full">
-              <x-label for="barcode" value="Barcode"></x-label>
-              <x-input class="w-full" type="text" id="barcode" disabled
-                value="{{ $currentAttendance['barcode']['name'] }}"></x-input>
+            <div>
+              <x-label for="time_out" value="Waktu Keluar" />
+              <x-input type="text" class="mt-1 w-full" id="time_out" disabled
+                value="{{ $currentAttendance['time_out'] ?? '-' }}"></x-input>
             </div>
-          @endif
-        </div>
+          </div>
+        @endif
+
+        @if (($currentAttendance['shift'] ?? false) || ($currentAttendance['barcode'] ?? false))
+          <div class="grid grid-cols-2 gap-3">
+            @if ($currentAttendance['shift'] ?? false)
+              <div>
+                <x-label for="shift" value="Shift" />
+                <x-input class="mt-1 w-full" type="text" id="shift" disabled
+                  value="{{ $currentAttendance['shift']['name'] }}"></x-input>
+              </div>
+            @endif
+            @if ($currentAttendance['barcode'] ?? false)
+              <div>
+                <x-label for="barcode" value="Barcode" />
+                <x-input class="mt-1 w-full" type="text" id="barcode" disabled
+                  value="{{ $currentAttendance['barcode']['name'] }}"></x-input>
+              </div>
+            @endif
+          </div>
+        @endif
       </div>
     @endif
   </div>

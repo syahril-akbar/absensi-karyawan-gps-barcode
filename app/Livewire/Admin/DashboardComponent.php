@@ -4,9 +4,11 @@ namespace App\Livewire\Admin;
 
 use App\Livewire\Traits\AttendanceDetailTrait;
 use App\Models\Attendance;
+use App\Models\Holiday;
 use App\Models\LeaveRequest;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 use Livewire\Component;
 
 class DashboardComponent extends Component
@@ -39,6 +41,24 @@ class DashboardComponent extends Component
         $absentCount = $employeesCount - ($presentCount + $lateCount + $excusedCount + $sickCount + $incompleteCount);
         $pendingLeaveCount = LeaveRequest::where('status', 'pending')->count();
 
+        $isTodayHoliday = \App\Helpers::isHoliday(Carbon::now());
+        $todayHoliday = Holiday::where('date', date('Y-m-d'))->first();
+        $todayHolidayName = $isTodayHoliday ? ($todayHoliday?->name ?? __('Weekend')) : null;
+        $upcomingHolidays = Holiday::where('date', '>', date('Y-m-d'))
+            ->orderBy('date')
+            ->limit(5)
+            ->get();
+
+        $last7Days = [];
+        $labels7Days = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::now()->subDays($i)->format('Y-m-d');
+            $labels7Days[] = Carbon::parse($date)->translatedFormat('d M');
+            $last7Days[] = Attendance::where('date', $date)
+                ->whereIn('status', ['present', 'late'])
+                ->count();
+        }
+
         return view('livewire.admin.dashboard', [
             'employees' => $employees,
             'employeesCount' => $employeesCount,
@@ -47,8 +67,13 @@ class DashboardComponent extends Component
             'excusedCount' => $excusedCount,
             'sickCount' => $sickCount,
             'incompleteCount' => $incompleteCount,
-            'absentCount' => $absentCount,
+            'absentCount' => $isTodayHoliday ? 0 : $absentCount,
             'pendingLeaveCount' => $pendingLeaveCount,
+            'last7Days' => $last7Days,
+            'labels7Days' => $labels7Days,
+            'isTodayHoliday' => $isTodayHoliday,
+            'todayHolidayName' => $todayHolidayName,
+            'upcomingHolidays' => $upcomingHolidays,
         ]);
     }
 }

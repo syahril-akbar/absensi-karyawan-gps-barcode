@@ -55,6 +55,18 @@ class ShiftComponent extends Component
         $this->selectedId = $id;
     }
 
+    public function toggleDay($day)
+    {
+        $day = (int) $day;
+        $days = $this->form->days;
+
+        if (in_array($day, $days)) {
+            $this->form->days = array_values(array_diff($days, [$day]));
+        } else {
+            $this->form->days = array_values(array_unique(array_merge($days, [$day])));
+        }
+    }
+
     public function delete()
     {
         $shift = Shift::find($this->selectedId);

@@ -3,8 +3,10 @@
 namespace App\Actions\Fortify;
 
 use App\Models\User;
+use App\Support\Settings;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 use Laravel\Jetstream\Jetstream;
 
@@ -19,6 +21,12 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
+        if (!Settings::getBool('registration.enabled')) {
+            throw ValidationException::withMessages([
+                'name' => Settings::get('registration.message'),
+            ]);
+        }
+
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
             'nip' => ['string', 'max:255', 'unique:users'],

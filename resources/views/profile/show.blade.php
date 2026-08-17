@@ -1,44 +1,54 @@
 <x-app-layout>
-  <x-slot name="header">
-    <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-      {{ __('Profile') }}
-    </h2>
-  </x-slot>
+  <div class="mx-auto w-full max-w-2xl px-4 pb-6 pt-6">
+    <div class="flex items-center gap-3">
+      <div class="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900">
+        <x-heroicon-o-user class="h-5 w-5 text-indigo-600 dark:text-indigo-300" />
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Profil</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Kelola informasi akun kamu</p>
+      </div>
+    </div>
 
-  <div>
-    <div class="mx-auto max-w-7xl py-10 sm:px-6 lg:px-8">
+    <!-- Profile Header Card -->
+    <div class="mt-6 rounded-3xl bg-white p-6 text-center shadow-sm dark:bg-gray-800">
+      <div class="mx-auto h-20 w-20">
+        @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
+          <img src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}"
+            class="h-20 w-20 rounded-full object-cover ring-4 ring-indigo-100 dark:ring-indigo-900" />
+        @else
+          <div
+            class="flex h-20 w-20 items-center justify-center rounded-full bg-indigo-600 text-2xl font-bold text-white ring-4 ring-indigo-100 dark:ring-indigo-900">
+            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+          </div>
+        @endif
+      </div>
+      <h2 class="mt-4 text-lg font-bold text-gray-900 dark:text-white">{{ Auth::user()->name }}</h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400">{{ Auth::user()->email }}</p>
+      @if (Auth::user()->division)
+        <span class="mt-3 inline-block rounded-full bg-indigo-50 px-4 py-1 text-xs font-semibold text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-300">
+          {{ Auth::user()->division->name }}
+        </span>
+      @endif
+    </div>
+
+    <div class="mt-6 flex flex-col gap-5">
       @if (Laravel\Fortify\Features::canUpdateProfileInformation())
         @livewire('profile.update-profile-information-form')
-
-        <x-section-border />
       @endif
 
       @if (Laravel\Fortify\Features::enabled(Laravel\Fortify\Features::updatePasswords()))
-        <div class="mt-10 sm:mt-0">
-          @livewire('profile.update-password-form')
-        </div>
-
-        <x-section-border />
+        @livewire('profile.update-password-form')
       @endif
 
       @if (Laravel\Fortify\Features::canManageTwoFactorAuthentication())
-        <div class="mt-10 sm:mt-0">
-          @livewire('profile.two-factor-authentication-form')
-        </div>
-
-        <x-section-border />
+        @livewire('profile.two-factor-authentication-form')
       @endif
 
-      <div class="mt-10 sm:mt-0">
-        @livewire('profile.logout-other-browser-sessions-form')
-      </div>
+      @livewire('profile.logout-other-browser-sessions-form')
 
       @if (Laravel\Jetstream\Jetstream::hasAccountDeletionFeatures())
-        <x-section-border />
-
-        <div class="mt-10 sm:mt-0">
-          @livewire('profile.delete-user-form')
-        </div>
+        @livewire('profile.delete-user-form')
       @endif
     </div>
   </div>

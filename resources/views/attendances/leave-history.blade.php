@@ -1,109 +1,129 @@
 <x-app-layout>
-  <x-slot name="header">
-    <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-      Riwayat Pengajuan Izin
-    </h2>
-  </x-slot>
-
-  <div x-data="{ open: false, selectedId: null, selectedData: {} }"
-    @detail-leave.window="selectedId = $event.detail; open = true"
-    class="py-12">
-    <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-      <div class="bg-white shadow-xl dark:bg-gray-800 sm:rounded-lg">
-        <div class="p-6 lg:p-8">
-          <div class="mb-4 flex items-center gap-3">
-            <x-label for="filter" value="Filter Status"></x-label>
-            <select id="filter" onchange="window.location.href = this.value"
-              class="rounded-md border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300">
-              <option value="{{ route('leave-history', ['filter' => 'all']) }}" {{ $currentFilter === 'all' ? 'selected' : '' }}>Semua</option>
-              <option value="{{ route('leave-history', ['filter' => 'pending']) }}" {{ $currentFilter === 'pending' ? 'selected' : '' }}>Menunggu ({{ $pendingCount }})</option>
-              <option value="{{ route('leave-history', ['filter' => 'approved']) }}" {{ $currentFilter === 'approved' ? 'selected' : '' }}>Disetujui</option>
-              <option value="{{ route('leave-history', ['filter' => 'rejected']) }}" {{ $currentFilter === 'rejected' ? 'selected' : '' }}>Ditolak</option>
-            </select>
+  <div x-data="{ open: false, selectedId: null }" @detail-leave.window="selectedId = $event.detail; open = true">
+    <div class="mx-auto w-full max-w-lg px-4 pb-6 pt-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900">
+            <x-heroicon-o-document-text class="h-5 w-5 text-indigo-600 dark:text-indigo-300" />
           </div>
-          <div class="mb-4">
-            <a href="{{ route('apply-leave') }}">
-              <x-button>
-                <x-heroicon-o-plus class="mr-2 h-4 w-4" />
-                Ajukan Izin Baru
-              </x-button>
-            </a>
-          </div>
-          <div class="overflow-x-scroll">
-            <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead class="bg-gray-50 dark:bg-gray-900">
-                <tr>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Tipe</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Tanggal</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Keterangan</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Status</th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Detail</th>
-                </tr>
-              </thead>
-              @forelse ($leaveRequests as $req)
-                <tbody>
-                  <tr class="group">
-                    <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
-                      {{ $req->type === 'excused' ? 'Izin' : 'Sakit' }}
-                    </td>
-                    <td class="px-4 py-3 text-sm text-gray-900 dark:text-white text-nowrap">
-                      {{ $req->from_date->format('d/m/Y') }}
-                      @if ($req->to_date != $req->from_date)
-                        - {{ $req->to_date->format('d/m/Y') }}
-                      @endif
-                    </td>
-                    <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">
-                      {{ $req->note }}
-                    </td>
-                    <td class="px-4 py-3 text-sm">
-                      @switch($req->status)
-                        @case('pending')
-                          <span class="font-medium text-amber-600 dark:text-amber-400">Menunggu</span>
-                          @break
-                        @case('approved')
-                          <span class="font-medium text-emerald-600 dark:text-emerald-400">Disetujui</span>
-                          @break
-                        @case('rejected')
-                          <span class="font-medium text-red-600 dark:text-red-400">Ditolak</span>
-                          @break
-                      @endswitch
-                    </td>
-                    <td class="px-4 py-3 text-sm">
-                      <x-button @click="$dispatch('detail-leave', {{ $req->id }})">Lihat</x-button>
-                    </td>
-                  </tr>
-                </tbody>
-              @empty
-                <tbody>
-                  <tr>
-                    <td colspan="5" class="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                      Belum ada pengajuan izin.
-                    </td>
-                  </tr>
-                </tbody>
-              @endforelse
-            </table>
-          </div>
-          <div class="mt-3">
-            {{ $leaveRequests->links() }}
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Riwayat Izin</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Semua pengajuan izin kamu</p>
           </div>
         </div>
+        <a href="{{ route('apply-leave') }}"
+          class="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-600 text-white shadow-md shadow-indigo-600/30 transition hover:bg-indigo-700">
+          <x-heroicon-o-plus class="h-6 w-6" />
+        </a>
+      </div>
+
+      <!-- Filter Status -->
+      <div class="mt-6 flex gap-2 overflow-x-auto pb-1">
+        @php
+          $filters = [
+              'all' => 'Semua',
+              'pending' => 'Menunggu' . ($pendingCount > 0 ? " ($pendingCount)" : ''),
+              'approved' => 'Disetujui',
+              'rejected' => 'Ditolak',
+          ];
+        @endphp
+        @foreach ($filters as $key => $label)
+          <a href="{{ route('leave-history', ['filter' => $key]) }}"
+            class="shrink-0 rounded-full px-4 py-2 text-xs font-semibold transition {{ $currentFilter === $key ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'bg-white text-gray-600 shadow-sm hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700' }}">
+            {{ $label }}
+          </a>
+        @endforeach
+      </div>
+
+      <!-- List -->
+      <div class="mt-5 flex flex-col gap-3">
+        @forelse ($leaveRequests as $req)
+          <div class="rounded-3xl bg-white p-5 shadow-sm dark:bg-gray-800">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div
+                  class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full {{ $req->type === 'excused' ? 'bg-blue-100 dark:bg-blue-900' : 'bg-purple-100 dark:bg-purple-900' }}">
+                  @if ($req->type === 'excused')
+                    <x-heroicon-o-paper-airplane class="h-5 w-5 text-blue-600 dark:text-blue-300" />
+                  @else
+                    <x-heroicon-o-heart class="h-5 w-5 text-purple-600 dark:text-purple-300" />
+                  @endif
+                </div>
+                <div>
+                  <p class="text-sm font-bold text-gray-900 dark:text-white">
+                    {{ $req->type === 'excused' ? 'Izin' : 'Sakit' }}
+                  </p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ $req->from_date->format('d/m/Y') }}
+                    @if ($req->to_date != $req->from_date)
+                      - {{ $req->to_date->format('d/m/Y') }}
+                    @endif
+                  </p>
+                </div>
+              </div>
+              <span
+                class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold {{ match ($req->status) {
+                    'pending' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
+                    'approved' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300',
+                    'rejected' => 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300',
+                    default => 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
+                } }}">
+                {{ match ($req->status) {
+                    'pending' => 'Menunggu',
+                    'approved' => 'Disetujui',
+                    'rejected' => 'Ditolak',
+                    default => $req->status,
+                } }}
+              </span>
+            </div>
+            <p class="mt-3 line-clamp-2 text-sm text-gray-500 dark:text-gray-400">{{ $req->note }}</p>
+            <div class="mt-4 flex items-center justify-between border-t border-gray-100 pt-3 dark:border-gray-700">
+              <span class="text-xs text-gray-400 dark:text-gray-500">
+                {{ $req->created_at->format('d/m/Y H:i') }}
+              </span>
+              <button @click="$dispatch('detail-leave', {{ $req->id }})"
+                class="rounded-xl bg-indigo-50 px-4 py-2 text-xs font-semibold text-indigo-600 transition hover:bg-indigo-100 dark:bg-indigo-900/50 dark:text-indigo-300 dark:hover:bg-indigo-900">
+                Detail
+              </button>
+            </div>
+          </div>
+        @empty
+          <div class="flex flex-col items-center justify-center rounded-3xl bg-white px-6 py-14 text-center shadow-sm dark:bg-gray-800">
+            <div class="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+              <x-heroicon-o-document-text class="h-7 w-7 text-gray-400 dark:text-gray-500" />
+            </div>
+            <p class="mt-4 text-sm font-semibold text-gray-700 dark:text-gray-200">Belum ada pengajuan izin</p>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Pengajuan yang kamu buat akan muncul di sini.</p>
+          </div>
+        @endforelse
+      </div>
+
+      <div class="mt-4">
+        {{ $leaveRequests->links() }}
       </div>
     </div>
 
-    <div x-show="open"
-      class="fixed inset-0 z-50 flex items-center justify-center"
+    <!-- Detail Modal -->
+    <div x-show="open" class="fixed inset-0 z-50 flex items-center justify-center" x-cloak
       @keydown.escape.window="open = false">
       <div class="fixed inset-0 bg-gray-900/50" @click="open = false"></div>
-      <div class="relative z-50 w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800">
-        <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Detail Pengajuan</h3>
+      <div class="relative z-50 w-full max-w-md rounded-3xl bg-white p-6 shadow-xl dark:bg-gray-800">
+        <div class="mb-4 flex items-center justify-between">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white">Detail Pengajuan</h3>
+          <button @click="open = false" class="rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700">
+            <x-heroicon-o-x-mark class="h-5 w-5" />
+          </button>
+        </div>
 
         @foreach ($leaveRequests as $req)
           <div x-show="selectedId === {{ $req->id }}">
             <div class="space-y-3 text-sm text-gray-600 dark:text-gray-400">
-              <div>
+              <div class="flex items-center gap-2">
                 <span class="font-medium text-gray-900 dark:text-white">Tipe:</span>
-                {{ $req->type === 'excused' ? 'Izin' : 'Sakit' }}
+                <span
+                  class="rounded-full px-3 py-1 text-xs font-semibold {{ $req->type === 'excused' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300' }}">
+                  {{ $req->type === 'excused' ? 'Izin' : 'Sakit' }}
+                </span>
               </div>
               <div>
                 <span class="font-medium text-gray-900 dark:text-white">Tanggal:</span>
@@ -143,7 +163,7 @@
                   @if ($isImage)
                     <div class="mt-1">
                       <img src="{{ Storage::url($req->attachment) }}" alt="Lampiran"
-                        class="max-h-48 rounded object-contain">
+                        class="max-h-48 rounded-xl object-contain">
                     </div>
                   @else
                     <a href="{{ Storage::url($req->attachment) }}" target="_blank"
@@ -161,7 +181,7 @@
 
         <div class="mt-6 flex justify-end">
           <button @click="open = false"
-            class="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+            class="rounded-xl bg-indigo-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700">
             Tutup
           </button>
         </div>

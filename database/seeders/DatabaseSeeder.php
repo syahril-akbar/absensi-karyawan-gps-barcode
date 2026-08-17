@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
             JobTitle::create(['name' => $value]);
         }
         (new AdminSeeder)->run();
+        (new SettingsSeeder)->run();
         Barcode::factory(1)->create(['name' => 'Barcode 1']);
         Shift::factory(2)->create();
     }

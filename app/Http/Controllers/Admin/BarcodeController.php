@@ -29,9 +29,9 @@ class BarcodeController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Barcode $barcode)
     {
-        //
+        return view('admin.barcodes.show', ['barcode' => $barcode]);
     }
 
     public function create()

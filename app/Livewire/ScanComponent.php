@@ -2,9 +2,9 @@
 
 namespace App\Livewire;
 
-use App\ExtendedCarbon;
 use App\Models\Attendance;
 use App\Models\Barcode;
+use App\Models\Holiday;
 use App\Models\Shift;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -20,12 +20,23 @@ class ScanComponent extends Component
     public ?array $currentLiveCoords = null;
     public string $successMsg = '';
     public bool $isAbsence = false;
+    public bool $isHolidayToday = false;
+    public ?string $holidayName = null;
 
     public function scan(string $barcode)
     {
+        if ($this->isHolidayToday) {
+            return __('Hari ini libur');
+        }
+
         if (is_null($this->currentLiveCoords)) {
             return __('Invalid location');
-        } else if (is_null($this->shift_id)) {
+        }
+
+        // Otomatis pakai shift yang benar untuk hari ini jika lupa/keliru memilih.
+        $this->shift_id = $this->resolveShiftIdForToday($this->shift_id);
+
+        if (is_null($this->shift_id)) {
             return __('Invalid shift');
         }
 
@@ -127,6 +138,9 @@ class ScanComponent extends Component
     public function mount()
     {
         $this->shifts = Shift::all();
+        $this->isHolidayToday = \App\Helpers::isHoliday(Carbon::now());
+        $holiday = Holiday::where('date', Carbon::now()->toDateString())->first();
+        $this->holidayName = $this->isHolidayToday ? ($holiday?->name ?? __('Weekend')) : null;
 
         /** @var Attendance */
         $attendance = Attendance::where('user_id', Auth::user()->id)
@@ -134,14 +148,57 @@ class ScanComponent extends Component
         if ($attendance) {
             $this->setAttendance($attendance);
         } else {
-            // get closest shift from current time
-            $closest = ExtendedCarbon::now()
-                ->closestFromDateArray($this->shifts->pluck('start_time')->toArray());
-
-            $this->shift_id = $this->shifts
-                ->where(fn (Shift $shift) => $shift->start_time == $closest->format('H:i:s'))
-                ->first()->id;
+            $this->shift_id = $this->resolveShiftIdForToday();
         }
+    }
+
+    /**
+     * Menentukan shift yang paling tepat untuk hari ini.
+     * - Prioritas: shift yang hari-nya (days) berisi hari ini.
+     * - Jika ada beberapa, ambil yang jam mulainya paling dekat dengan waktu sekarang.
+     * - Jika tidak ada shift khusus hari ini, fallback ke shift berlaku setiap hari
+     *   (days kosong) paling dekat, lalu semua shift.
+     * - Menghormati pilihan manual user selama shift itu sah untuk hari ini.
+     */
+    protected function resolveShiftIdForToday(?int $selectedId = null): ?int
+    {
+        $day = Carbon::now()->dayOfWeekIso;
+        $nowMinutes = Carbon::now()->hour * 60 + Carbon::now()->minute;
+        $shifts = Shift::all();
+
+        $closest = fn ($collection) => $collection
+            ->sortBy(fn (Shift $s) => abs($this->minutesSinceMidnight($s->start_time) - $nowMinutes))
+            ->first();
+
+        $specific = $shifts->filter(fn (Shift $s) => !empty($s->days) && in_array($day, $s->days));
+
+        if ($specific->isNotEmpty()) {
+            if ($selectedId !== null && $specific->contains('id', $selectedId)) {
+                return $selectedId;
+            }
+
+            return $closest($specific)?->id;
+        }
+
+        $everyDay = $shifts->filter(fn (Shift $s) => empty($s->days));
+        $pool = $everyDay->isNotEmpty() ? $everyDay : $shifts;
+
+        if ($pool->isEmpty()) {
+            return null;
+        }
+
+        if ($selectedId !== null && $pool->contains('id', $selectedId)) {
+            return $selectedId;
+        }
+
+        return $closest($pool)?->id;
+    }
+
+    protected function minutesSinceMidnight(string $time): int
+    {
+        $parts = explode(':', $time);
+
+        return ((int) ($parts[0] ?? 0)) * 60 + ((int) ($parts[1] ?? 0));
     }
 
     public function render()

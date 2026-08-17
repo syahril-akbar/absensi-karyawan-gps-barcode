@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\ImportExportController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PwaController;
 use App\Http\Controllers\UserAttendanceController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -16,6 +17,8 @@ Route::get('/', function () {
     // return view('welcome');
     return redirect('/login');
 });
+
+Route::get('/manifest.json', [PwaController::class, 'manifest'])->name('pwa.manifest');
 
 Route::middleware([
     'auth:sanctum',
@@ -77,6 +80,8 @@ Route::middleware([
             ->name('admin.masters.education');
         Route::get('/masterdata/shift', [MasterDataController::class, 'shift'])
             ->name('admin.masters.shift');
+        Route::get('/masterdata/holiday', [MasterDataController::class, 'holiday'])
+            ->name('admin.masters.holiday');
         Route::get('/masterdata/admin', [MasterDataController::class, 'admin'])
             ->name('admin.masters.admin');
 
@@ -98,6 +103,16 @@ Route::middleware([
             ->name('admin.import-export.users');
         Route::get('/import-export/attendances', [ImportExportController::class, 'attendances'])
             ->name('admin.import-export.attendances');
+
+        // PWA Settings
+        Route::get('/pwa-settings', function () {
+            return view('admin.pwa-settings');
+        })->name('admin.pwa-settings');
+
+        // General Settings
+        Route::get('/settings', function () {
+            return view('admin.settings');
+        })->name('admin.settings');
 
         Route::post('/users/import', [ImportExportController::class, 'importUsers'])
             ->name('admin.users.import');

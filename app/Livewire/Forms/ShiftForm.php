@@ -14,6 +14,7 @@ class ShiftForm extends Form
     public $name = '';
     public $start_time = null;
     public $end_time = null;
+    public array $days = [];
 
     public function rules()
     {
@@ -26,6 +27,8 @@ class ShiftForm extends Form
             ],
             'start_time' => ['required'],
             'end_time' => ['nullable'],
+            'days' => ['array'],
+            'days.*' => ['integer', 'min:1', 'max:7'],
         ];
     }
 
@@ -35,7 +38,13 @@ class ShiftForm extends Form
         $this->name = $shift->name;
         $this->start_time = $shift->start_time;
         $this->end_time = $shift->end_time;
+        $this->days = array_map('intval', $shift->days ?? []);
         return $this;
+    }
+
+    protected function normalizeDays()
+    {
+        $this->days = array_values(array_map('intval', array_filter((array) $this->days, 'is_numeric')));
     }
 
     public function store()
@@ -43,6 +52,7 @@ class ShiftForm extends Form
         if (Auth::user()->isNotAdmin) {
             return abort(403);
         }
+        $this->normalizeDays();
         $this->validate();
         Shift::create($this->all());
         $this->reset();
@@ -53,6 +63,7 @@ class ShiftForm extends Form
         if (Auth::user()->isNotAdmin) {
             return abort(403);
         }
+        $this->normalizeDays();
         $this->validate();
         $this->shift->update($this->all());
         $this->reset();

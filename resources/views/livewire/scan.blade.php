@@ -309,13 +309,13 @@
 
     const popupStyles = {
       in: {
-        banner: 'bg-gradient-to-br from-emerald-500 to-teal-600',
+        banner: 'bg-emerald-500',
         title: 'Absen Masuk Berhasil',
         subtitle: 'Selamat bekerja!',
         badge: 'Masuk',
       },
       out: {
-        banner: 'bg-gradient-to-br from-indigo-500 to-blue-600',
+        banner: 'bg-indigo-600',
         title: 'Absen Keluar Berhasil',
         subtitle: 'Sampai jumpa, hati-hati di jalan!',
         badge: 'Keluar',
@@ -326,8 +326,9 @@
       const type = result?.type === 'out' ? 'out' : 'in';
       const cfg = popupStyles[type];
 
-      banner.className = banner.className.replace(/bg-gradient-to-br[^"]*/g, '').trim();
-      banner.classList.add(...cfg.banner.split(' '));
+      banner.className =
+        'relative flex flex-col items-center overflow-hidden px-6 pb-7 pt-9 text-white ' +
+        cfg.banner;
       titleEl.textContent = cfg.title;
       subtitleEl.textContent = cfg.subtitle;
       timeEl.textContent = result?.time ? result.time.slice(0, 5) : '--:--';

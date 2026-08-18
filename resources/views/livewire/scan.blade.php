@@ -91,10 +91,6 @@
       </div>
     </div>
 
-    @if ($attendance && is_null($attendance->time_out) && in_array($attendance->status, ['present', 'late', 'incomplete']))
-       {{-- Kalau sudah masuk & belum keluar: pilih mode keluar secara eksplisit --}}
-       {{-- Hapus tombol absen keluar manual, logic & DB tetap --}}
-   @endif
 
     <div class="relative mt-6 grid grid-cols-2 gap-4">
       <div class="rounded-2xl bg-white/15 p-4 backdrop-blur">
@@ -474,17 +470,6 @@
         return true;
       }
 
-      function askCheckoutMode() {
-        // Panggil Livewire untuk enable checkout mode
-        $wire.enterCheckoutMode().then((allowed) => {
-          if (allowed) {
-            // Livewire render ulang, scanner perlu restart
-            // (onScanSuccess akan dipanggil saat scan berhasil, mode checkout aktif)
-          } else {
-            errorMsg.innerHTML = 'Tidak bisa masuk mode keluar. Cek status absensi.';
-          }
-        });
-      }
 
       // Listen untuk perubahan dari Livewire
       Livewire.on('reset-error', () => {

@@ -22,29 +22,12 @@ class ScanComponent extends Component
     public bool $isAbsence = false;
     public bool $isHolidayToday = false;
     public ?string $holidayName = null;
-    public bool $isCheckoutMode = false; // true: scanner jalan untuk absen keluar saja
-
-    public function enterCheckoutMode()
-    {
-        // Hanya boleh kalau sudah absen masuk & belum keluar.
-        if ($this->attendance && is_null($this->attendance->time_out)) {
-            $this->isCheckoutMode = true;
-            $this->resetError();
-            return true;
-        }
-        return false;
-    }
 
     public function resetError()
     {
         $this->dispatch('reset-error');
     }
 
-    public function cancelCheckoutMode()
-    {
-        $this->isCheckoutMode = false;
-        $this->resetError();
-    }
 
     public function scan(string $barcode)
     {
@@ -56,16 +39,6 @@ class ScanComponent extends Component
             return __('Invalid location');
         }
 
-        // Checkout butuh mode eksplisit untuk cegah salah-scan jadi keluar
-        // (hanya berlaku untuk status hadir terlambat/belum lengkap).
-        if (
-            $this->attendance
-            && is_null($this->attendance->time_out)
-            && in_array($this->attendance->status, ['present', 'late', 'incomplete'])
-            && !$this->isCheckoutMode
-        ) {
-            return __('Sudah absen masuk. Tekan tombol "Absen Keluar" untuk pulang.');
-        }
 
         // Otomatis pakai shift yang benar untuk hari ini jika lupa/keliru memilih.
         $this->shift_id = $this->resolveShiftIdForToday($this->shift_id);
@@ -94,10 +67,20 @@ class ScanComponent extends Component
             ->first();
 
         if (!$existingAttendance) {
-            // Hanya absen keluar yang diizinkan; rekam presensi masuk dilakukan oleh sistem admin/user lain
-            return __('Belum ada absen masuk hari ini. Absen keluar tidak dapat dilakukan.');
+            $attendance = $this->createAttendance($barcode);
+            $this->scanResult = [
+                'type' => 'in',
+                'time' => $attendance->time_in,
+                'status' => $attendance->status,
+            ];
         } else {
             $attendance = $existingAttendance;
+
+            // Sudah absen keluar: tolak scan berikutnya, jangan timpa time_out.
+            if (!is_null($attendance->time_out)) {
+                return __('Absen keluar sudah tercatat hari ini.');
+            }
+
             $shift = $attendance->shift;
             $now = Carbon::now();
             $status = $attendance->status;
@@ -119,7 +102,6 @@ class ScanComponent extends Component
 
         if ($attendance) {
             $this->setAttendance($attendance->fresh());
-            $this->isCheckoutMode = false;
             Attendance::clearUserAttendanceCache(Auth::user(), Carbon::parse($attendance->date));
             return $this->scanResult; // stempel hasil: ['type','time','status']
         }

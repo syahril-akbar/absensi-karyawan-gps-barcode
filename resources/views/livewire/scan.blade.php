@@ -5,6 +5,33 @@
   @pushOnce('styles')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+      #success-popup {
+        z-index: 99;
+      }
+      .check-circle,
+      .check-mark {
+        transform-origin: center;
+      }
+      #success-check.animate .check-circle {
+        stroke-dasharray: 166;
+        stroke-dashoffset: 166;
+        animation: popup-circle 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+      }
+      #success-check.animate .check-mark {
+        stroke-dasharray: 48;
+        stroke-dashoffset: 48;
+        animation: popup-check 0.35s cubic-bezier(0.65, 0, 0.45, 1) 0.55s forwards;
+      }
+      @keyframes popup-circle {
+        0% { stroke-dashoffset: 166; transform: scale(0.9); }
+        100% { stroke-dashoffset: 0; transform: scale(1); }
+      }
+      @keyframes popup-check {
+        0% { stroke-dashoffset: 48; }
+        100% { stroke-dashoffset: 0; }
+      }
+    </style>
   @endpushOnce
   @pushOnce('scripts')
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -99,9 +126,52 @@
 
   <!-- Messages -->
   <h4 id="scanner-error" class="text-sm font-semibold text-red-500 dark:text-red-400" wire:ignore></h4>
-  <h4 id="scanner-result" class="hidden rounded-2xl bg-green-100 px-4 py-3 text-sm font-semibold text-green-700 dark:bg-green-900/50 dark:text-green-300" wire:ignore>
-    {{ $successMsg }}
-  </h4>
+
+  <!-- Success Popup -->
+  <div id="success-popup" class="fixed inset-0 z-50 hidden items-center justify-center px-6"
+    wire:ignore aria-hidden="true">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"
+      onclick="closeSuccessPopup()"></div>
+
+    <div id="success-card"
+      class="relative w-full max-w-xs scale-95 opacity-0 transition-all duration-300 ease-out">
+      <div class="overflow-hidden rounded-3xl bg-white shadow-2xl shadow-slate-900/20 dark:bg-slate-800">
+        <!-- Banner -->
+        <div id="success-banner"
+          class="relative flex flex-col items-center overflow-hidden px-6 pb-7 pt-9 text-white">
+          <div class="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/10"></div>
+          <div class="pointer-events-none absolute -bottom-12 -left-10 h-32 w-32 rounded-full bg-white/10"></div>
+
+          <div class="relative flex h-20 w-20 items-center justify-center rounded-full bg-white/25 ring-4 ring-white/30">
+            <svg id="success-check" viewBox="0 0 52 52" class="h-12 w-12">
+              <circle class="check-circle" cx="26" cy="26" r="24" fill="none" stroke="currentColor"
+                stroke-width="3" />
+              <path class="check-mark" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"
+                stroke-linejoin="round" d="M15 27 l7 7 l16 -17" />
+            </svg>
+          </div>
+
+          <h3 id="success-title" class="relative mt-4 text-lg font-bold">Absen Berhasil</h3>
+          <p id="success-subtitle" class="relative mt-1 text-sm text-white/85">Terima kasih</p>
+          <span id="success-badge"
+            class="relative mt-3 hidden rounded-full bg-white/25 px-3 py-1 text-xs font-semibold"></span>
+        </div>
+
+        <!-- Detail -->
+        <div class="bg-white px-6 py-5 dark:bg-slate-800">
+          <div
+            class="flex items-center justify-center gap-3 rounded-2xl bg-slate-50 py-3 dark:bg-slate-700/50">
+            <x-heroicon-o-clock class="h-5 w-5 text-slate-400 dark:text-slate-300" />
+            <span id="success-time" class="text-2xl font-bold tracking-tight text-slate-800 dark:text-white">--:--</span>
+          </div>
+          <button onclick="closeSuccessPopup()"
+            class="mt-4 w-full rounded-2xl bg-indigo-600 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-600/30 transition hover:bg-indigo-700 active:scale-[0.98]">
+            Selesai
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Scan Card -->
   @if (!$isAbsence && !$isHolidayToday)
@@ -227,6 +297,72 @@
     const errorMsg = document.querySelector('#scanner-error');
     getLocation();
 
+    // ---- Success popup ----
+    const popup = document.querySelector('#success-popup');
+    const popupCard = document.querySelector('#success-card');
+    const banner = document.querySelector('#success-banner');
+    const checkSvg = document.querySelector('#success-check');
+    const titleEl = document.querySelector('#success-title');
+    const subtitleEl = document.querySelector('#success-subtitle');
+    const badgeEl = document.querySelector('#success-badge');
+    const timeEl = document.querySelector('#success-time');
+
+    const popupStyles = {
+      in: {
+        banner: 'bg-gradient-to-br from-emerald-500 to-teal-600',
+        title: 'Absen Masuk Berhasil',
+        subtitle: 'Selamat bekerja!',
+        badge: 'Masuk',
+      },
+      out: {
+        banner: 'bg-gradient-to-br from-indigo-500 to-blue-600',
+        title: 'Absen Keluar Berhasil',
+        subtitle: 'Sampai jumpa, hati-hati di jalan!',
+        badge: 'Keluar',
+      },
+    };
+
+    function showSuccessPopup(result) {
+      const type = result?.type === 'out' ? 'out' : 'in';
+      const cfg = popupStyles[type];
+
+      banner.className = banner.className.replace(/bg-gradient-to-br[^"]*/g, '').trim();
+      banner.classList.add(...cfg.banner.split(' '));
+      titleEl.textContent = cfg.title;
+      subtitleEl.textContent = cfg.subtitle;
+      timeEl.textContent = result?.time ? result.time.slice(0, 5) : '--:--';
+
+      if (result?.status === 'late') {
+        badgeEl.textContent = type === 'out' ? 'Keluar · Telat' : 'Masuk · Terlambat';
+        badgeEl.classList.remove('hidden');
+      } else {
+        badgeEl.classList.add('hidden');
+      }
+
+      // restart check animation
+      checkSvg.classList.remove('animate');
+      void checkSvg.offsetWidth;
+      checkSvg.classList.add('animate');
+
+      popup.classList.remove('hidden');
+      popup.classList.add('flex');
+      popup.setAttribute('aria-hidden', 'false');
+      requestAnimationFrame(() => {
+        popupCard.classList.remove('scale-95', 'opacity-0');
+        popupCard.classList.add('scale-100', 'opacity-100');
+      });
+    }
+
+    function closeSuccessPopup() {
+      popupCard.classList.remove('scale-100', 'opacity-100');
+      popupCard.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        popup.classList.add('hidden');
+        popup.classList.remove('flex');
+        popup.setAttribute('aria-hidden', 'true');
+      }, 250);
+    }
+
     async function getLocation() {
       if (navigator.geolocation) {
         const map = L.map('currentMap');
@@ -328,7 +464,8 @@
       function onAttendanceSuccess() {
         scanner.stop();
         errorMsg.innerHTML = '';
-        document.querySelector('#scanner-result').classList.remove('hidden');
+        const scanResult = {{ json($scanResult) }};
+        showSuccessPopup(scanResult);
       }
 
       const observer = new MutationObserver((mutationList, observer) => {

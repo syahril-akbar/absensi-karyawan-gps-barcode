@@ -18,7 +18,7 @@ class ScanComponent extends Component
     public $shift_id = null;
     public $shifts = null;
     public ?array $currentLiveCoords = null;
-    public string $successMsg = '';
+    public array $scanResult = []; // ['type' => 'in'|'out', 'time' => 'H:i:s', 'status' => '...']
     public bool $isAbsence = false;
     public bool $isHolidayToday = false;
     public ?string $holidayName = null;
@@ -61,7 +61,11 @@ class ScanComponent extends Component
 
         if (!$existingAttendance) {
             $attendance = $this->createAttendance($barcode);
-            $this->successMsg = __('Attendance In Successful');
+            $this->scanResult = [
+                'type' => 'in',
+                'time' => $attendance->time_in,
+                'status' => $attendance->status,
+            ];
         } else {
             $attendance = $existingAttendance;
             $shift = $attendance->shift;
@@ -76,7 +80,11 @@ class ScanComponent extends Component
                 'time_out' => $now->format('H:i:s'),
                 'status' => $status,
             ]);
-            $this->successMsg = __('Attendance Out Successful');
+            $this->scanResult = [
+                'type' => 'out',
+                'time' => $now->format('H:i:s'),
+                'status' => $status,
+            ];
         }
 
         if ($attendance) {

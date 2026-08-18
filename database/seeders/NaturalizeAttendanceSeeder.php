@@ -52,57 +52,35 @@ class NaturalizeAttendanceSeeder extends Seeder
             [$eh, $em] = explode(':', $shiftEnd);
             $shiftEndMin = (int)$eh * 60 + (int)$em;
 
-            // Randomize: 85% present (0-15 min after start), 10% late (15-45 min after), 5% incomplete (early leave)
-            $roll = random_int(1, 100);
-
-            if ($roll <= 85) {
-                // Present: time_in 07:15 - 07:40 (around start time)
-                $timeInMin = $shiftStartMin + random_int(-15, 10); // 07:15-07:40 for 07:30 start
-                $status = 'present';
-            } elseif ($roll <= 95) {
-                // Late: 07:41 - 08:15
-                $timeInMin = $shiftStartMin + random_int(11, 45);
-                $status = 'late';
-            } else {
-                // Incomplete: masuk on time tapi pulang awal (< shift end)
-                $timeInMin = $shiftStartMin + random_int(-10, 5);
-                $status = 'incomplete';
-            }
-
-            // Clamp time_in reasonable (06:30 - 08:30)
-            $timeInMin = max(390, min(510, $timeInMin)); // 06:30 - 08:30
+            // Semua hadir (present), time_in = jam shift
+            $timeInMin = $shiftStartMin + random_int(0, 5); // 07:30 - 07:35
             $timeInH = (int)($timeInMin / 60);
             $timeInM = $timeInMin % 60;
             $timeIn = sprintf('%02d:%02d:00', $timeInH, $timeInM);
 
-            // Time out: present/late → around shift end ± 30 min
-            // incomplete → early leave (30-90 min before shift end)
-            if ($status === 'incomplete') {
-                $timeOutMin = $shiftEndMin - random_int(30, 90);
-            } else {
-                $timeOutMin = $shiftEndMin + random_int(-30, 30);
-            }
-            $timeOutMin = max(900, min(1140, $timeOutMin)); // 15:00 - 19:00
+            // Time out: shift end ± 15 menit
+            $timeOutMin = $shiftEndMin + random_int(-15, 15);
+            $timeOutMin = max(900, min(1140, $timeOutMin));
             $timeOutH = (int)($timeOutMin / 60);
             $timeOutM = $timeOutMin % 60;
             $timeOut = sprintf('%02d:%02d:00', $timeOutH, $timeOutM);
 
             // Ensure time_out > time_in
             if ($timeOutMin <= $timeInMin) {
-                $timeOutMin = $timeInMin + random_int(60, 240); // minimal 1 jam kerja
+                $timeOutMin = $timeInMin + random_int(60, 240);
                 $timeOutH = (int)($timeOutMin / 60);
                 $timeOutM = $timeOutMin % 60;
                 $timeOut = sprintf('%02d:%02d:00', $timeOutH, $timeOutM);
             }
 
-            // Randomize lat/lng slightly around barcode location (-5.1598639, 119.4073217)
-            $lat = -5.1598639 + (random_int(-50, 50) / 100000); // ±50 meter
-            $lng = 119.4073217 + (random_int(-50, 50) / 100000);
+            // Jitter lat/lng halus di sekitar barcode (biar tidak identik persis)
+            $lat = -5.1598639 + (random_int(-30, 30) / 100000);
+            $lng = 119.4073217 + (random_int(-30, 30) / 100000);
 
             DB::table('attendances')->where('id', $att->id)->update([
                 'time_in'   => $timeIn,
                 'time_out'  => $timeOut,
-                'status'    => $status,
+                'status'    => 'present',
                 'latitude'  => $lat,
                 'longitude' => $lng,
             ]);

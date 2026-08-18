@@ -27,13 +27,14 @@ class Aug18AttendanceSeeder extends Seeder
         $inserted = 0;
 
         foreach ($users as $user) {
-            // Natural time_in: 07:15-07:45, time_out: 15:45-16:15 (semua hadir)
-            $timeInMin = 450 + random_int(-15, 15); // 07:30 ±15
+            // Natural time_in: SEBELUM jam shift (07:00-07:30, tidak boleh telat)
+            $timeInMin = 450 - random_int(1, 30); // 07:30 - (1..30)
             $timeInH = (int)($timeInMin / 60);
             $timeInM = $timeInMin % 60;
             $timeIn = sprintf('%02d:%02d:00', $timeInH, $timeInM);
 
-            $timeOutMin = 960 + random_int(-15, 15); // 16:00 ±15
+            // Natural time_out: SETELAH jam shift (16:00-16:30, tidak pulang cepat)
+            $timeOutMin = 960 + random_int(1, 30); // 16:00 + (1..30)
             $timeOutH = (int)($timeOutMin / 60);
             $timeOutM = $timeOutMin % 60;
             $timeOut = sprintf('%02d:%02d:00', $timeOutH, $timeOutM);

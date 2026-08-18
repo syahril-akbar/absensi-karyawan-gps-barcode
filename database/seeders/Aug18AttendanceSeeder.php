@@ -27,12 +27,23 @@ class Aug18AttendanceSeeder extends Seeder
         $inserted = 0;
 
         foreach ($users as $user) {
+            // Natural time_in: 07:15-07:45, time_out: 15:45-16:15 (semua hadir)
+            $timeInMin = 450 + random_int(-15, 15); // 07:30 ±15
+            $timeInH = (int)($timeInMin / 60);
+            $timeInM = $timeInMin % 60;
+            $timeIn = sprintf('%02d:%02d:00', $timeInH, $timeInM);
+
+            $timeOutMin = 960 + random_int(-15, 15); // 16:00 ±15
+            $timeOutH = (int)($timeOutMin / 60);
+            $timeOutM = $timeOutMin % 60;
+            $timeOut = sprintf('%02d:%02d:00', $timeOutH, $timeOutM);
+
             DB::table('attendances')->insert([
                 'user_id'    => $user->id,
                 'barcode_id' => $barcodeId,
                 'date'       => $date,
-                'time_in'    => '07:30:00',
-                'time_out'   => '16:00:00',
+                'time_in'    => $timeIn,
+                'time_out'   => $timeOut,
                 'shift_id'   => $shiftId,
                 'latitude'   => -5.1598639 + (random_int(-30, 30) / 100000),
                 'longitude'  => 119.4073217 + (random_int(-30, 30) / 100000),

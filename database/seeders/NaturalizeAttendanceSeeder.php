@@ -52,26 +52,30 @@ class NaturalizeAttendanceSeeder extends Seeder
             [$eh, $em] = explode(':', $shiftEnd);
             $shiftEndMin = (int)$eh * 60 + (int)$em;
 
-            // Semua hadir (present), time_in = jam shift
-            $timeInMin = $shiftStartMin + random_int(0, 5); // 07:30 - 07:35
+            // Natural time_in: shift start ±15 menit (07:15-07:45 untuk 07:30 shift)
+            // Biar gak terlalu rutin, hindari tepat di boundary
+            $timeInMin = $shiftStartMin + random_int(-15, 15);
+            // Clamp ke range wajar: 07:00-08:00
+            $timeInMin = max(420, min(480, $timeInMin));
+
             $timeInH = (int)($timeInMin / 60);
             $timeInM = $timeInMin % 60;
             $timeIn = sprintf('%02d:%02d:00', $timeInH, $timeInM);
 
-            // Time out: shift end ± 15 menit
+            // Natural time_out: shift end ±15 menit (15:45-16:15 untuk 16:00 shift)
             $timeOutMin = $shiftEndMin + random_int(-15, 15);
-            $timeOutMin = max(900, min(1140, $timeOutMin));
+            // Clamp ke range wajar: 15:30-16:30
+            $timeOutMin = max(930, min(990, $timeOutMin));
+
+            // Pastikan time_out > time_in + minimal 6 jam kerja
+            if ($timeOutMin <= $timeInMin + 360) {
+                $timeOutMin = $timeInMin + random_int(390, 480); // 6.5-8 jam kerja
+                $timeOutMin = min($timeOutMin, 990); // max 16:30
+            }
+
             $timeOutH = (int)($timeOutMin / 60);
             $timeOutM = $timeOutMin % 60;
             $timeOut = sprintf('%02d:%02d:00', $timeOutH, $timeOutM);
-
-            // Ensure time_out > time_in
-            if ($timeOutMin <= $timeInMin) {
-                $timeOutMin = $timeInMin + random_int(60, 240);
-                $timeOutH = (int)($timeOutMin / 60);
-                $timeOutM = $timeOutMin % 60;
-                $timeOut = sprintf('%02d:%02d:00', $timeOutH, $timeOutM);
-            }
 
             // Jitter lat/lng halus di sekitar barcode (biar tidak identik persis)
             $lat = -5.1598639 + (random_int(-30, 30) / 100000);

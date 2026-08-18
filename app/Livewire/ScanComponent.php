@@ -94,12 +94,8 @@ class ScanComponent extends Component
             ->first();
 
         if (!$existingAttendance) {
-            $attendance = $this->createAttendance($barcode);
-            $this->scanResult = [
-                'type' => 'in',
-                'time' => $attendance->time_in,
-                'status' => $attendance->status,
-            ];
+            // Hanya absen keluar yang diizinkan; rekam presensi masuk dilakukan oleh sistem admin/user lain
+            return __('Belum ada absen masuk hari ini. Absen keluar tidak dapat dilakukan.');
         } else {
             $attendance = $existingAttendance;
             $shift = $attendance->shift;

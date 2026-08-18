@@ -12,6 +12,18 @@ trait AttendanceDetailTrait
     public function show($attendanceId)
     {
         /** @var Attendance */
+        // Check if it's a date string (Y-m-d) for holiday
+        if (is_string($attendanceId) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $attendanceId)) {
+            $this->showDetail = true;
+            $this->currentAttendance = [
+                'status' => 'holiday',
+                'date' => $attendanceId,
+                'name' => auth()->user()->name,
+                'nip' => auth()->user()->nip,
+            ];
+            return;
+        }
+
         $attendance = Attendance::find($attendanceId);
         if ($attendance) {
             $this->showDetail = true;

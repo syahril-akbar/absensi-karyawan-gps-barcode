@@ -2,7 +2,7 @@
   <div class="px-6 py-4">
     @if ($currentAttendance)
       @php
-        $isExcused = $currentAttendance['status'] == 'excused' || $currentAttendance['status'] == 'sick';
+        $isExcused = $currentAttendance['status'] == 'excused' || $currentAttendance['status'] == 'sick' || $currentAttendance['status'] == 'holiday';
         $showMap = $currentAttendance['latitude'] && $currentAttendance['longitude'] && !$isExcused;
         $statusPill = [
             'present' => 'bg-green-100 text-green-700 dark:bg-green-900/60 dark:text-green-200',
@@ -11,6 +11,7 @@
             'sick' => 'bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-200',
             'incomplete' => 'bg-orange-100 text-orange-700 dark:bg-orange-900/60 dark:text-orange-200',
             'absent' => 'bg-red-100 text-red-700 dark:bg-red-900/60 dark:text-red-200',
+            'holiday' => 'bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-200',
         ][$currentAttendance['status']] ?? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200';
       @endphp
 
@@ -20,6 +21,15 @@
           class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold {{ $statusPill }}">
           {{ __('status_' . $currentAttendance['status']) }}
         </span>
+        {{-- Tombol close kecil --}}
+        <button type="button"
+          wire:click="$set('showDetail', false)"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition"
+          aria-label="Tutup">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
       <div class="mt-5 space-y-4">

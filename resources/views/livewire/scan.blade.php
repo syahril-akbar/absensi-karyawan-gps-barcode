@@ -92,31 +92,9 @@
     </div>
 
     @if ($attendance && is_null($attendance->time_out) && in_array($attendance->status, ['present', 'late', 'incomplete']))
-      {{-- Kalau sudah masuk & belum keluar: pilih mode keluar secara eksplisit --}}
-      <div class="mt-4">
-        @if ($isCheckoutMode)
-          <div class="rounded-2xl bg-white/15 p-3 backdrop-blur">
-            <p class="flex items-center gap-2 text-sm font-bold">
-              <x-heroicon-s-arrow-path class="h-4 w-4 animate-spin" />
-              Mode Absen Keluar Aktif
-            </p>
-            <p class="mt-1 text-xs text-indigo-100">Scan barcode QR untuk absen keluar.</p>
-            <button wire:click="cancelCheckoutMode"
-              class="mt-2 text-xs font-semibold text-indigo-200 underline hover:text-white">
-              Batal
-            </button>
-          </div>
-        @else
-          <button
-            onclick="askCheckoutMode()"
-            class="flex items-center gap-2 rounded-2xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-500/30 transition hover:bg-emerald-600 active:scale-[0.98]">
-            <x-heroicon-o-arrow-left-end-on-rectangle class="h-4 w-4" />
-            Absen Keluar
-          </button>
-          <p class="mt-1 text-xs text-indigo-200">Tekan tombol ini untuk mengaktifkan scan absen keluar.</p>
-        @endif
-      </div>
-    @endif
+       {{-- Kalau sudah masuk & belum keluar: pilih mode keluar secara eksplisit --}}
+       {{-- Hapus tombol absen keluar manual, logic & DB tetap --}}
+   @endif
 
     <div class="relative mt-6 grid grid-cols-2 gap-4">
       <div class="rounded-2xl bg-white/15 p-4 backdrop-blur">

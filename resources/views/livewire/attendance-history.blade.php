@@ -91,8 +91,8 @@
                   break;
           }
         @endphp
-        @if ($attendance && ($attendance['attachment'] || $attendance['note'] || $attendance['coordinates']))
-          <button class="aspect-square p-1" wire:click="show({{ $attendance['id'] }})"
+        @if ($attendance && ($attendance['attachment'] || $attendance['note'] || $attendance['coordinates'] || $status == 'holiday'))
+          <button class="aspect-square p-1" wire:click="show({{ $attendance['id'] ?? '' }})"
             onclick="setLocation({{ $attendance['lat'] ?? 0 }}, {{ $attendance['lng'] ?? 0 }})">
             <div
               class="flex h-full w-full flex-col items-center justify-center rounded-xl text-xs font-bold transition hover:scale-105 {{ $bgColor }}">

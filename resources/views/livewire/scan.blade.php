@@ -91,6 +91,33 @@
       </div>
     </div>
 
+    @if ($attendance && is_null($attendance->time_out) && in_array($attendance->status, ['present', 'late', 'incomplete']))
+      {{-- Kalau sudah masuk & belum keluar: pilih mode keluar secara eksplisit --}}
+      <div class="mt-4">
+        @if ($isCheckoutMode)
+          <div class="rounded-2xl bg-white/15 p-3 backdrop-blur">
+            <p class="flex items-center gap-2 text-sm font-bold">
+              <x-heroicon-s-arrow-path class="h-4 w-4 animate-spin" />
+              Mode Absen Keluar Aktif
+            </p>
+            <p class="mt-1 text-xs text-indigo-100">Scan barcode QR untuk absen keluar.</p>
+            <button wire:click="cancelCheckoutMode"
+              class="mt-2 text-xs font-semibold text-indigo-200 underline hover:text-white">
+              Batal
+            </button>
+          </div>
+        @else
+          <button
+            onclick="askCheckoutMode()"
+            class="flex items-center gap-2 rounded-2xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-emerald-500/30 transition hover:bg-emerald-600 active:scale-[0.98]">
+            <x-heroicon-o-arrow-left-end-on-rectangle class="h-4 w-4" />
+            Absen Keluar
+          </button>
+          <p class="mt-1 text-xs text-indigo-200">Tekan tombol ini untuk mengaktifkan scan absen keluar.</p>
+        @endif
+      </div>
+    @endif
+
     <div class="relative mt-6 grid grid-cols-2 gap-4">
       <div class="rounded-2xl bg-white/15 p-4 backdrop-blur">
         <div class="flex items-center gap-2 text-indigo-100">
@@ -442,25 +469,51 @@
         const attendance = await $wire.getAttendance();
 
         if (attendance) {
-          const timeIn = new Date(attendance.time_in).valueOf();
-          const diff = (Date.now() - timeIn) / (1000 * 3600);
-          const minAttendanceTime = 1;
-          console.log(`Difference = ${diff}`);
-          if (diff <= minAttendanceTime) {
-            const timeIn = new Date(attendance.time_in).toLocaleTimeString([], {
+          // attendance.time_in adalah string "HH:mm:ss". Buat Date hari ini + waktu itu.
+          const [h, m, s] = (attendance.time_in || '').split(':').map(Number);
+          if (isNaN(h) || isNaN(m) || isNaN(s)) {
+            return true; // invalid time, skip check
+          }
+          const today = new Date();
+          const timeInDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), h, m, s);
+          const diffHours = (Date.now() - timeInDate.getTime()) / (1000 * 3600);
+          const minAttendanceTime = 1; // 1 jam minimal sebelum bisa checkout
+
+          console.log(`checkTime diff = ${diffHours}h`);
+          if (diffHours <= minAttendanceTime) {
+            const timeInStr = timeInDate.toLocaleTimeString([], {
               hour: 'numeric',
               minute: 'numeric',
               second: 'numeric',
               hour12: false,
             });
             const confirmation = confirm(
-              `Anda baru saja absen pada ${timeIn}, apakah ingin melanjutkan untuk absen keluar?`
+              `Anda baru saja absen masuk pada ${timeInStr}. Minimal ${minAttendanceTime} jam sebelum bisa absen keluar. Yakin ingin lanjut?`
             );
             return confirmation;
           }
         }
         return true;
       }
+
+      function askCheckoutMode() {
+        // Panggil Livewire untuk enable checkout mode
+        $wire.enterCheckoutMode().then((allowed) => {
+          if (allowed) {
+            // Livewire render ulang, scanner perlu restart
+            // (onScanSuccess akan dipanggil saat scan berhasil, mode checkout aktif)
+          } else {
+            errorMsg.innerHTML = 'Tidak bisa masuk mode keluar. Cek status absensi.';
+          }
+        });
+      }
+
+      // Listen untuk perubahan isCheckoutMode dari Livewire
+      document.addEventListener('livewire:load', () => {
+        Livewire.on('reset-error', () => {
+          errorMsg.innerHTML = '';
+        });
+      });
 
       function onAttendanceSuccess() {
         scanner.stop();

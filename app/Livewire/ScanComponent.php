@@ -22,6 +22,29 @@ class ScanComponent extends Component
     public bool $isAbsence = false;
     public bool $isHolidayToday = false;
     public ?string $holidayName = null;
+    public bool $isCheckoutMode = false; // true: scanner jalan untuk absen keluar saja
+
+    public function enterCheckoutMode()
+    {
+        // Hanya boleh kalau sudah absen masuk & belum keluar.
+        if ($this->attendance && is_null($this->attendance->time_out)) {
+            $this->isCheckoutMode = true;
+            $this->resetError();
+            return true;
+        }
+        return false;
+    }
+
+    public function resetError()
+    {
+        $this->dispatch('reset-error');
+    }
+
+    public function cancelCheckoutMode()
+    {
+        $this->isCheckoutMode = false;
+        $this->resetError();
+    }
 
     public function scan(string $barcode)
     {
@@ -31,6 +54,11 @@ class ScanComponent extends Component
 
         if (is_null($this->currentLiveCoords)) {
             return __('Invalid location');
+        }
+
+        // Checkout butuh mode eksplisit untuk cegah salah-scan jadi keluar.
+        if ($this->attendance && is_null($this->attendance->time_out) && !$this->isCheckoutMode) {
+            return __('Sudah absen masuk. Tekan tombol "Absen Keluar" untuk pulang.');
         }
 
         // Otomatis pakai shift yang benar untuk hari ini jika lupa/keliru memilih.
@@ -89,6 +117,7 @@ class ScanComponent extends Component
 
         if ($attendance) {
             $this->setAttendance($attendance->fresh());
+            $this->isCheckoutMode = false;
             Attendance::clearUserAttendanceCache(Auth::user(), Carbon::parse($attendance->date));
             return true;
         }

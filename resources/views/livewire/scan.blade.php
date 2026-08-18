@@ -454,8 +454,8 @@
 
         const result = await $wire.scan(decodedText);
 
-        if (result === true) {
-          return onAttendanceSuccess();
+        if (result && typeof result === 'object') {
+          return onAttendanceSuccess(result);
         } else if (typeof result === 'string') {
           errorMsg.innerHTML = result;
         }
@@ -508,18 +508,15 @@
         });
       }
 
-      // Listen untuk perubahan isCheckoutMode dari Livewire
-      document.addEventListener('livewire:load', () => {
-        Livewire.on('reset-error', () => {
-          errorMsg.innerHTML = '';
-        });
+      // Listen untuk perubahan dari Livewire
+      Livewire.on('reset-error', () => {
+        errorMsg.innerHTML = '';
       });
 
-      function onAttendanceSuccess() {
+      function onAttendanceSuccess(result) {
         scanner.stop();
         errorMsg.innerHTML = '';
-        const scanResult = {{ json($scanResult) }};
-        showSuccessPopup(scanResult);
+        showSuccessPopup(result);
       }
 
       const observer = new MutationObserver((mutationList, observer) => {

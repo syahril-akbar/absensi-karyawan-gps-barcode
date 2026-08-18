@@ -56,8 +56,14 @@ class ScanComponent extends Component
             return __('Invalid location');
         }
 
-        // Checkout butuh mode eksplisit untuk cegah salah-scan jadi keluar.
-        if ($this->attendance && is_null($this->attendance->time_out) && !$this->isCheckoutMode) {
+        // Checkout butuh mode eksplisit untuk cegah salah-scan jadi keluar
+        // (hanya berlaku untuk status hadir terlambat/belum lengkap).
+        if (
+            $this->attendance
+            && is_null($this->attendance->time_out)
+            && in_array($this->attendance->status, ['present', 'late', 'incomplete'])
+            && !$this->isCheckoutMode
+        ) {
             return __('Sudah absen masuk. Tekan tombol "Absen Keluar" untuk pulang.');
         }
 
@@ -119,7 +125,7 @@ class ScanComponent extends Component
             $this->setAttendance($attendance->fresh());
             $this->isCheckoutMode = false;
             Attendance::clearUserAttendanceCache(Auth::user(), Carbon::parse($attendance->date));
-            return true;
+            return $this->scanResult; // stempel hasil: ['type','time','status']
         }
     }
 

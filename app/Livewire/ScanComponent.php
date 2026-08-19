@@ -70,7 +70,7 @@ class ScanComponent extends Component
             $attendance = $this->createAttendance($barcode);
             $this->scanResult = [
                 'type' => 'in',
-                'time' => $attendance->time_in,
+                'time' => $attendance->time_in->format('H:i:s'),
                 'status' => $attendance->status,
             ];
         } else {
@@ -151,8 +151,8 @@ class ScanComponent extends Component
             return null;
         }
         return [
-            'time_in' => $this->attendance?->time_in,
-            'time_out' => $this->attendance?->time_out,
+            'time_in' => $this->attendance?->time_in?->format('H:i:s'),
+            'time_out' => $this->attendance?->time_out?->format('H:i:s'),
         ];
     }
 

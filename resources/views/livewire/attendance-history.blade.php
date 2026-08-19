@@ -19,14 +19,14 @@
   <!-- Calendar Card -->
   <div class="rounded-3xl bg-white p-5 shadow-sm dark:bg-gray-800">
     <div class="grid w-full grid-cols-7 text-center">
-      @foreach (['M', 'S', 'S', 'R', 'K', 'J', 'S'] as $day)
+      @foreach (['S', 'S', 'R', 'K', 'J', 'S', 'M'] as $day)
         <div
           class="flex h-9 items-center justify-center text-xs font-bold {{ $day === 'M' ? 'text-red-400' : '' }} {{ $day === 'J' ? 'text-green-500 dark:text-green-400' : '' }} {{ $day === 'S' || $day === 'M' || $day === 'K' || $day === 'R' ? 'text-gray-400' : 'text-gray-500 dark:text-gray-400' }}">
           {{ $day }}
         </div>
       @endforeach
-      @if ($start->dayOfWeek !== 0)
-        @foreach (range(1, $start->dayOfWeek) as $i)
+      @if ($start->dayOfWeekIso !== 1)
+        @foreach (range(1, $start->dayOfWeekIso - 1) as $i)
           <div class="aspect-square p-1">
             <div class="h-full w-full rounded-xl bg-gray-50 dark:bg-gray-900/40"></div>
           </div>
@@ -110,8 +110,8 @@
           </div>
         @endif
       @endforeach
-      @if ($end->dayOfWeek !== 6)
-        @foreach (range(5, $end->dayOfWeek) as $i)
+      @if ($end->dayOfWeekIso !== 7)
+        @foreach (range(1, 7 - $end->dayOfWeekIso) as $i)
           <div class="aspect-square p-1">
             <div class="h-full w-full rounded-xl bg-gray-50 dark:bg-gray-900/40"></div>
           </div>

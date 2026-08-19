@@ -365,6 +365,8 @@
       }, 250);
     }
 
+    window.closeSuccessPopup = closeSuccessPopup;
+
     async function getLocation() {
       if (navigator.geolocation) {
         const map = L.map('currentMap');

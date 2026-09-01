@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Jetstream\InteractsWithBanner;
 use Livewire\Component;
@@ -31,9 +32,56 @@ class AttendanceComponent extends Component
 
     public ?string $search = null;
 
+    public bool $editingAttendance = false;
+    public ?int $editingAttendanceId = null;
+    public ?string $attendanceTimeIn = null;
+    public ?string $attendanceTimeOut = null;
+    public ?string $attendanceStatus = null;
+    public ?string $attendanceNote = null;
+
     public function mount()
     {
         $this->date = date('Y-m-d');
+    }
+
+    public function editAttendance(int $id): void
+    {
+        abort_unless(Auth::user()?->isSuperadmin, 403);
+
+        $attendance = Attendance::findOrFail($id);
+        $this->resetValidation();
+        $this->editingAttendanceId = $attendance->id;
+        $this->attendanceTimeIn = $attendance->time_in?->format('H:i');
+        $this->attendanceTimeOut = $attendance->time_out?->format('H:i');
+        $this->attendanceStatus = $attendance->status;
+        $this->attendanceNote = $attendance->note;
+        $this->editingAttendance = true;
+    }
+
+    public function updateAttendance(): void
+    {
+        abort_unless(Auth::user()?->isSuperadmin, 403);
+
+        $validated = $this->validate([
+            'editingAttendanceId' => ['required', 'integer', 'exists:attendances,id'],
+            'attendanceTimeIn' => ['nullable', 'date_format:H:i'],
+            'attendanceTimeOut' => ['nullable', 'date_format:H:i'],
+            'attendanceStatus' => ['required', 'in:present,late,excused,sick,absent,incomplete'],
+            'attendanceNote' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $attendance = Attendance::findOrFail($validated['editingAttendanceId']);
+        $attendance->update([
+            'time_in' => $validated['attendanceTimeIn'],
+            'time_out' => $validated['attendanceTimeOut'],
+            'status' => $validated['attendanceStatus'],
+            'note' => $validated['attendanceNote'],
+        ]);
+        Attendance::clearUserAttendanceCache($attendance->user, Carbon::parse($attendance->date));
+
+        $this->editingAttendance = false;
+        $this->editingAttendanceId = null;
+        $this->banner(__('Updated successfully.'));
     }
 
     public function updating($key): void

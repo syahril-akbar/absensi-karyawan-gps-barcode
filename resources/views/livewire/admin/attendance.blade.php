@@ -296,7 +296,13 @@
                 @endphp
                 <td class="text-center group-hover:bg-gray-50 dark:group-hover:bg-gray-700">
                   <div class="flex items-center justify-center gap-3 py-3">
-                    @if ($attendance && ($attendance['attachment'] || $attendance['note'] || $attendance['coordinates']))
+                  @if ($attendance && auth()->user()?->isSuperadmin)
+                    <x-button type="button" wire:click="editAttendance({{ $attendance['id'] }})">
+                      <x-heroicon-o-pencil-square class="mr-1.5 h-4 w-4" />
+                      Edit
+                    </x-button>
+                  @endif
+                  @if ($attendance && ($attendance['attachment'] || $attendance['note'] || $attendance['coordinates']))
                       <x-button type="button" wire:click="show({{ $attendance['id'] }})"
                         onclick="setLocation({{ $attendance['lat'] ?? 0 }}, {{ $attendance['lng'] ?? 0 }})">
                         {{ __('Detail') }}
@@ -325,6 +331,51 @@
       {{ $employees->links() }}
     </div>
   </div>
+
+  <x-dialog-modal wire:model="editingAttendance" maxWidth="md">
+    <x-slot name="title">Edit Absensi</x-slot>
+    <form wire:submit="updateAttendance">
+      <x-slot name="content">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <x-label for="attendance_time_in" value="Waktu Masuk" />
+            <x-input id="attendance_time_in" type="time" step="1" wire:model="attendanceTimeIn"
+              class="mt-1 block w-full rounded-xl" />
+            @error('attendanceTimeIn') <x-input-error for="attendanceTimeIn" class="mt-2" /> @enderror
+          </div>
+          <div>
+            <x-label for="attendance_time_out" value="Waktu Keluar" />
+            <x-input id="attendance_time_out" type="time" step="1" wire:model="attendanceTimeOut"
+              class="mt-1 block w-full rounded-xl" />
+            @error('attendanceTimeOut') <x-input-error for="attendanceTimeOut" class="mt-2" /> @enderror
+          </div>
+        </div>
+        <div class="mt-4">
+          <x-label for="attendance_status" value="Status" />
+          <x-select id="attendance_status" wire:model="attendanceStatus" class="mt-1 block w-full rounded-xl">
+            @foreach (['present', 'late', 'excused', 'sick', 'absent', 'incomplete'] as $status)
+              <option value="{{ $status }}">{{ __("status_$status") }}</option>
+            @endforeach
+          </x-select>
+          @error('attendanceStatus') <x-input-error for="attendanceStatus" class="mt-2" /> @enderror
+        </div>
+        <div class="mt-4">
+          <x-label for="attendance_note" value="Keterangan" />
+          <x-textarea id="attendance_note" wire:model="attendanceNote" maxlength="255"
+            class="mt-1 block w-full rounded-xl" />
+          @error('attendanceNote') <x-input-error for="attendanceNote" class="mt-2" /> @enderror
+        </div>
+      </x-slot>
+      <x-slot name="footer">
+        <x-secondary-button type="button" wire:click="$set('editingAttendance', false)" wire:loading.attr="disabled">
+          Batal
+        </x-secondary-button>
+        <x-button class="ml-2" type="submit" wire:loading.attr="disabled">
+          Simpan
+        </x-button>
+      </x-slot>
+    </form>
+  </x-dialog-modal>
 
   <x-attendance-detail-modal :current-attendance="$currentAttendance" />
   @stack('attendance-detail-scripts')

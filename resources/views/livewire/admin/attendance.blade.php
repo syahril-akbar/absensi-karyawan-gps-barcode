@@ -338,6 +338,22 @@
       <x-slot name="content">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
+            <x-label for="attendance_user_id" value="Karyawan" />
+            <x-select id="attendance_user_id" wire:model="attendanceUserId" class="mt-1 block w-full rounded-xl">
+              @foreach ($users as $userOption)
+                <option value="{{ $userOption->id }}">{{ $userOption->name }}</option>
+              @endforeach
+            </x-select>
+            @error('attendanceUserId') <x-input-error for="attendanceUserId" class="mt-2" /> @enderror
+          </div>
+          <div>
+            <x-label for="attendance_date" value="Tanggal" />
+            <x-input id="attendance_date" type="date" wire:model="attendanceDate" class="mt-1 block w-full rounded-xl" />
+            @error('attendanceDate') <x-input-error for="attendanceDate" class="mt-2" /> @enderror
+          </div>
+        </div>
+        <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
             <x-label for="attendance_time_in" value="Waktu Masuk" />
             <x-input id="attendance_time_in" type="time" step="1" wire:model="attendanceTimeIn"
               class="mt-1 block w-full rounded-xl" />
@@ -348,6 +364,42 @@
             <x-input id="attendance_time_out" type="time" step="1" wire:model="attendanceTimeOut"
               class="mt-1 block w-full rounded-xl" />
             @error('attendanceTimeOut') <x-input-error for="attendanceTimeOut" class="mt-2" /> @enderror
+          </div>
+        </div>
+        <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <x-label for="attendance_shift_id" value="Shift" />
+            <x-select id="attendance_shift_id" wire:model="attendanceShiftId" class="mt-1 block w-full rounded-xl">
+              <option value="">-</option>
+              @foreach ($shifts as $shift)
+                <option value="{{ $shift->id }}">{{ $shift->name }}</option>
+              @endforeach
+            </x-select>
+            @error('attendanceShiftId') <x-input-error for="attendanceShiftId" class="mt-2" /> @enderror
+          </div>
+          <div>
+            <x-label for="attendance_barcode_id" value="Barcode" />
+            <x-select id="attendance_barcode_id" wire:model="attendanceBarcodeId" class="mt-1 block w-full rounded-xl">
+              <option value="">-</option>
+              @foreach ($barcodes as $barcode)
+                <option value="{{ $barcode->id }}">{{ $barcode->name }}</option>
+              @endforeach
+            </x-select>
+            @error('attendanceBarcodeId') <x-input-error for="attendanceBarcodeId" class="mt-2" /> @enderror
+          </div>
+        </div>
+        <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <x-label for="attendance_latitude" value="Latitude" />
+            <x-input id="attendance_latitude" type="number" step="any" wire:model="attendanceLatitude"
+              class="mt-1 block w-full rounded-xl" />
+            @error('attendanceLatitude') <x-input-error for="attendanceLatitude" class="mt-2" /> @enderror
+          </div>
+          <div>
+            <x-label for="attendance_longitude" value="Longitude" />
+            <x-input id="attendance_longitude" type="number" step="any" wire:model="attendanceLongitude"
+              class="mt-1 block w-full rounded-xl" />
+            @error('attendanceLongitude') <x-input-error for="attendanceLongitude" class="mt-2" /> @enderror
           </div>
         </div>
         <div class="mt-4">

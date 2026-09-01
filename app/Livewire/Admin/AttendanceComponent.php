@@ -38,6 +38,12 @@ class AttendanceComponent extends Component
     public ?string $attendanceTimeOut = null;
     public ?string $attendanceStatus = null;
     public ?string $attendanceNote = null;
+    public ?string $attendanceUserId = null;
+    public ?string $attendanceDate = null;
+    public ?int $attendanceShiftId = null;
+    public ?int $attendanceBarcodeId = null;
+    public ?string $attendanceLatitude = null;
+    public ?string $attendanceLongitude = null;
 
     public function mount()
     {
@@ -55,6 +61,12 @@ class AttendanceComponent extends Component
         $this->attendanceTimeOut = $attendance->time_out?->format('H:i');
         $this->attendanceStatus = $attendance->status;
         $this->attendanceNote = $attendance->note;
+        $this->attendanceUserId = $attendance->user_id;
+        $this->attendanceDate = $attendance->date?->format('Y-m-d');
+        $this->attendanceShiftId = $attendance->shift_id;
+        $this->attendanceBarcodeId = $attendance->barcode_id;
+        $this->attendanceLatitude = $attendance->latitude;
+        $this->attendanceLongitude = $attendance->longitude;
         $this->editingAttendance = true;
     }
 
@@ -68,14 +80,26 @@ class AttendanceComponent extends Component
             'attendanceTimeOut' => ['nullable', 'date_format:H:i'],
             'attendanceStatus' => ['required', 'in:present,late,excused,sick,absent,incomplete'],
             'attendanceNote' => ['nullable', 'string', 'max:255'],
+            'attendanceUserId' => ['required', 'exists:users,id'],
+            'attendanceDate' => ['required', 'date_format:Y-m-d'],
+            'attendanceShiftId' => ['nullable', 'exists:shifts,id'],
+            'attendanceBarcodeId' => ['nullable', 'exists:barcodes,id'],
+            'attendanceLatitude' => ['nullable', 'numeric'],
+            'attendanceLongitude' => ['nullable', 'numeric'],
         ]);
 
         $attendance = Attendance::findOrFail($validated['editingAttendanceId']);
         $attendance->update([
+            'user_id' => $validated['attendanceUserId'],
+            'date' => $validated['attendanceDate'],
             'time_in' => $validated['attendanceTimeIn'],
             'time_out' => $validated['attendanceTimeOut'],
             'status' => $validated['attendanceStatus'],
             'note' => $validated['attendanceNote'],
+            'shift_id' => $validated['attendanceShiftId'],
+            'barcode_id' => $validated['attendanceBarcodeId'],
+            'latitude' => $validated['attendanceLatitude'],
+            'longitude' => $validated['attendanceLongitude'],
         ]);
         Attendance::clearUserAttendanceCache($attendance->user, Carbon::parse($attendance->date));
 
@@ -230,7 +254,17 @@ class AttendanceComponent extends Component
                 return $user;
             });
 
-        $data = ['employees' => $employees, 'dates' => $dates];
+        $users = User::where('group', 'user')->orderBy('name')->get(['id', 'name']);
+        $shifts = \App\Models\Shift::orderBy('name')->get(['id', 'name']);
+        $barcodes = \App\Models\Barcode::orderBy('name')->get(['id', 'name']);
+
+        $data = [
+            'employees' => $employees,
+            'dates' => $dates,
+            'users' => $users,
+            'shifts' => $shifts,
+            'barcodes' => $barcodes,
+        ];
         session(['attendance_employees_fallback' => $data]);
 
         return view('livewire.admin.attendance', $data);

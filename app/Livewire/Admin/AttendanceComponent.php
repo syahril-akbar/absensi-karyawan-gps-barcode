@@ -50,23 +50,53 @@ class AttendanceComponent extends Component
         $this->date = date('Y-m-d');
     }
 
-    public function editAttendance(int $id): void
+    public function editAttendance(?int $id = null, ?string $userId = null): void
     {
         abort_unless(Auth::user()?->isSuperadmin, 403);
 
-        $attendance = Attendance::findOrFail($id);
         $this->resetValidation();
-        $this->editingAttendanceId = $attendance->id;
-        $this->attendanceTimeIn = $attendance->time_in?->format('H:i');
-        $this->attendanceTimeOut = $attendance->time_out?->format('H:i');
-        $this->attendanceStatus = $attendance->status;
-        $this->attendanceNote = $attendance->note;
-        $this->attendanceUserId = $attendance->user_id;
-        $this->attendanceDate = $attendance->date?->format('Y-m-d');
-        $this->attendanceShiftId = $attendance->shift_id;
-        $this->attendanceBarcodeId = $attendance->barcode_id;
-        $this->attendanceLatitude = $attendance->latitude;
-        $this->attendanceLongitude = $attendance->longitude;
+
+        if ($id) {
+            $attendance = Attendance::findOrFail($id);
+            $this->editingAttendanceId = $attendance->id;
+            $this->attendanceTimeIn = $attendance->time_in?->format('H:i');
+            $this->attendanceTimeOut = $attendance->time_out?->format('H:i');
+            $this->attendanceStatus = $attendance->status;
+            $this->attendanceNote = $attendance->note;
+            $this->attendanceUserId = $attendance->user_id;
+            $this->attendanceDate = $attendance->date?->format('Y-m-d');
+            $this->attendanceShiftId = $attendance->shift_id;
+            $this->attendanceBarcodeId = $attendance->barcode_id;
+            $this->attendanceLatitude = $attendance->latitude;
+            $this->attendanceLongitude = $attendance->longitude;
+        } else {
+            $date = $this->date ?? date('Y-m-d');
+            $attendance = Attendance::where('user_id', $userId)->where('date', $date)->first();
+            if ($attendance) {
+                $this->editingAttendanceId = $attendance->id;
+                $this->attendanceTimeIn = $attendance->time_in?->format('H:i');
+                $this->attendanceTimeOut = $attendance->time_out?->format('H:i');
+                $this->attendanceStatus = $attendance->status;
+                $this->attendanceNote = $attendance->note;
+                $this->attendanceShiftId = $attendance->shift_id;
+                $this->attendanceBarcodeId = $attendance->barcode_id;
+                $this->attendanceLatitude = $attendance->latitude;
+                $this->attendanceLongitude = $attendance->longitude;
+            } else {
+                $this->editingAttendanceId = null;
+                $this->attendanceTimeIn = null;
+                $this->attendanceTimeOut = null;
+                $this->attendanceStatus = 'absent';
+                $this->attendanceNote = null;
+                $this->attendanceShiftId = null;
+                $this->attendanceBarcodeId = null;
+                $this->attendanceLatitude = null;
+                $this->attendanceLongitude = null;
+            }
+            $this->attendanceUserId = $userId;
+            $this->attendanceDate = $date;
+        }
+
         $this->editingAttendance = true;
     }
 
@@ -75,7 +105,7 @@ class AttendanceComponent extends Component
         abort_unless(Auth::user()?->isSuperadmin, 403);
 
         $validated = $this->validate([
-            'editingAttendanceId' => ['required', 'integer', 'exists:attendances,id'],
+            'editingAttendanceId' => ['nullable', 'integer', 'exists:attendances,id'],
             'attendanceTimeIn' => ['nullable', 'date_format:H:i,H:i:s'],
             'attendanceTimeOut' => ['nullable', 'date_format:H:i,H:i:s'],
             'attendanceStatus' => ['required', 'in:present,late,excused,sick,absent,incomplete'],
@@ -88,19 +118,31 @@ class AttendanceComponent extends Component
             'attendanceLongitude' => ['nullable', 'numeric'],
         ]);
 
-        $attendance = Attendance::findOrFail($validated['editingAttendanceId']);
-        $attendance->update([
+        $attributes = [
             'user_id' => $validated['attendanceUserId'],
             'date' => $validated['attendanceDate'],
-            'time_in' => $validated['attendanceTimeIn'],
-            'time_out' => $validated['attendanceTimeOut'],
+            'time_in' => $validated['attendanceTimeIn'] ?: null,
+            'time_out' => $validated['attendanceTimeOut'] ?: null,
             'status' => $validated['attendanceStatus'],
-            'note' => $validated['attendanceNote'],
-            'shift_id' => $validated['attendanceShiftId'],
-            'barcode_id' => $validated['attendanceBarcodeId'],
-            'latitude' => $validated['attendanceLatitude'],
-            'longitude' => $validated['attendanceLongitude'],
-        ]);
+            'note' => $validated['attendanceNote'] ?: null,
+            'shift_id' => $validated['attendanceShiftId'] ?: null,
+            'barcode_id' => $validated['attendanceBarcodeId'] ?: null,
+            'latitude' => $validated['attendanceLatitude'] !== null && $validated['attendanceLatitude'] !== '' ? $validated['attendanceLatitude'] : null,
+            'longitude' => $validated['attendanceLongitude'] !== null && $validated['attendanceLongitude'] !== '' ? $validated['attendanceLongitude'] : null,
+        ];
+
+        if ($validated['editingAttendanceId']) {
+            $attendance = Attendance::findOrFail($validated['editingAttendanceId']);
+            $attendance->update($attributes);
+        } else {
+            $attendance = Attendance::updateOrCreate(
+                [
+                    'user_id' => $validated['attendanceUserId'],
+                    'date' => $validated['attendanceDate'],
+                ],
+                $attributes
+            );
+        }
         Attendance::clearUserAttendanceCache($attendance->user, Carbon::parse($attendance->date));
 
         $this->editingAttendance = false;

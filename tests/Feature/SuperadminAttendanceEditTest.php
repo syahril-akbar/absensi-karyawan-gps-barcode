@@ -111,3 +111,26 @@ test('attendance editor validates time status and note', function () {
             'attendanceNote',
         ]);
 });
+
+test('superadmin can create or edit attendance for employee who did not attend', function () {
+    $superadmin = User::factory()->admin(superadmin: true)->create();
+    $absentEmployee = User::factory()->create(['group' => 'user']);
+
+    Livewire::actingAs($superadmin)
+        ->test(AttendanceComponent::class)
+        ->call('editAttendance', null, $absentEmployee->id)
+        ->assertSet('editingAttendance', true)
+        ->assertSet('editingAttendanceId', null)
+        ->assertSet('attendanceStatus', 'absent')
+        ->assertSet('attendanceUserId', $absentEmployee->id)
+        ->set('attendanceStatus', 'excused')
+        ->set('attendanceNote', 'Izin urusan keluarga')
+        ->call('updateAttendance')
+        ->assertHasNoErrors()
+        ->assertSet('editingAttendance', false);
+
+    $saved = Attendance::where('user_id', $absentEmployee->id)->first();
+    expect($saved)->not->toBeNull()
+        ->and($saved->status)->toBe('excused')
+        ->and($saved->note)->toBe('Izin urusan keluarga');
+});

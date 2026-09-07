@@ -296,18 +296,25 @@
                 @endphp
                 <td class="text-center group-hover:bg-gray-50 dark:group-hover:bg-gray-700">
                   <div class="flex items-center justify-center gap-3 py-3">
-                  @if ($attendance && auth()->user()?->isSuperadmin)
-                    <x-button type="button" wire:click="editAttendance({{ $attendance['id'] }})">
-                      <x-heroicon-o-pencil-square class="mr-1.5 h-4 w-4" />
-                      Edit
-                    </x-button>
+                  @if (auth()->user()?->isSuperadmin)
+                    @if ($attendance)
+                      <x-button type="button" wire:click="editAttendance({{ $attendance['id'] }})">
+                        <x-heroicon-o-pencil-square class="mr-1.5 h-4 w-4" />
+                        Edit
+                      </x-button>
+                    @else
+                      <x-button type="button" wire:click="editAttendance(null, '{{ $employee->id }}')">
+                        <x-heroicon-o-pencil-square class="mr-1.5 h-4 w-4" />
+                        Edit
+                      </x-button>
+                    @endif
                   @endif
                   @if ($attendance && ($attendance['attachment'] || $attendance['note'] || $attendance['coordinates']))
                       <x-button type="button" wire:click="show({{ $attendance['id'] }})"
                         onclick="setLocation({{ $attendance['lat'] ?? 0 }}, {{ $attendance['lng'] ?? 0 }})">
                         {{ __('Detail') }}
                       </x-button>
-                    @else
+                    @elseif (!auth()->user()?->isSuperadmin)
                       <span class="text-sm text-gray-400">-</span>
                     @endif
                   </div>

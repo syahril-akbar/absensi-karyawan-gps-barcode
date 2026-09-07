@@ -122,7 +122,7 @@ class ScanComponent extends Component
         $timeIn = $now->format('H:i:s');
         /** @var Shift */
         $shift = Shift::find($this->shift_id);
-        $status = Carbon::now()->setTimeFromTimeString($shift->start_time)->lt($now) ? 'late' : 'present';
+        $status = $shift?->start_time && $now->copy()->setTimeFromTimeString($shift->start_time)->endOfMinute()->lt($now) ? 'late' : 'present';
         return Attendance::create([
             'user_id' => Auth::user()->id,
             'barcode_id' => $barcode->id,

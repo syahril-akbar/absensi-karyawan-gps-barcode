@@ -153,3 +153,23 @@ test('attendance without shift end time stays present even if clocked out early'
 
     expect($attendance->status)->toBe('present');
 });
+
+test('attendance status is present when clocked in during shift start minute with seconds', function () {
+    $now = Carbon::parse('2026-06-13 08:00:45');
+    Carbon::setTestNow($now);
+
+    $shift = $this->shift;
+    $status = $shift?->start_time && $now->copy()->setTimeFromTimeString($shift->start_time)->endOfMinute()->lt($now) ? 'late' : 'present';
+
+    expect($status)->toBe('present');
+});
+
+test('attendance status is late when clocked in after shift start minute has passed', function () {
+    $now = Carbon::parse('2026-06-13 08:01:00');
+    Carbon::setTestNow($now);
+
+    $shift = $this->shift;
+    $status = $shift?->start_time && $now->copy()->setTimeFromTimeString($shift->start_time)->endOfMinute()->lt($now) ? 'late' : 'present';
+
+    expect($status)->toBe('late');
+});

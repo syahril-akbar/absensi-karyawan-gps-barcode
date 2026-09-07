@@ -76,8 +76,8 @@ class AttendanceComponent extends Component
 
         $validated = $this->validate([
             'editingAttendanceId' => ['required', 'integer', 'exists:attendances,id'],
-            'attendanceTimeIn' => ['nullable', 'date_format:H:i'],
-            'attendanceTimeOut' => ['nullable', 'date_format:H:i'],
+            'attendanceTimeIn' => ['nullable', 'date_format:H:i,H:i:s'],
+            'attendanceTimeOut' => ['nullable', 'date_format:H:i,H:i:s'],
             'attendanceStatus' => ['required', 'in:present,late,excused,sick,absent,incomplete'],
             'attendanceNote' => ['nullable', 'string', 'max:255'],
             'attendanceUserId' => ['required', 'exists:users,id'],

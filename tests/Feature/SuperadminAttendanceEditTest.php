@@ -45,6 +45,30 @@ test('superadmin can update an attendance from the admin component', function ()
         ->and($this->attendance->note)->toBe('Diperbaiki oleh superadmin');
 });
 
+test('attendance editor accepts browser time values with seconds', function () {
+    $superadmin = User::factory()->admin(superadmin: true)->create();
+
+    Livewire::actingAs($superadmin)
+        ->test(AttendanceComponent::class)
+        ->call('editAttendance', $this->attendance->id)
+        ->set('attendanceTimeOut', '16:04:00')
+        ->call('updateAttendance')
+        ->assertHasNoErrors();
+
+    expect($this->attendance->fresh()->time_out->format('H:i:s'))->toBe('16:04:00');
+});
+
+test('attendance editor submit button belongs to its form', function () {
+    $superadmin = User::factory()->admin(superadmin: true)->create();
+
+    Livewire::actingAs($superadmin)
+        ->test(AttendanceComponent::class)
+        ->call('editAttendance', $this->attendance->id)
+        ->assertSeeHtml('<form id="attendance-edit" wire:submit="updateAttendance">')
+        ->assertSeeHtml('<button type="submit"')
+        ->assertSeeHtml('form="attendance-edit"');
+});
+
 test('regular admin cannot open attendance editor', function () {
     $admin = User::factory()->admin()->create();
 

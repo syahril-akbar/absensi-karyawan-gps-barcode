@@ -334,8 +334,8 @@
 
   <x-dialog-modal wire:model="editingAttendance" maxWidth="md">
     <x-slot name="title">Edit Absensi</x-slot>
-    <form wire:submit="updateAttendance">
-      <x-slot name="content">
+    <x-slot name="content">
+      <form id="attendance-edit" wire:submit="updateAttendance">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <x-label for="attendance_user_id" value="Karyawan" />
@@ -417,16 +417,16 @@
             class="mt-1 block w-full rounded-xl" />
           @error('attendanceNote') <x-input-error for="attendanceNote" class="mt-2" /> @enderror
         </div>
-      </x-slot>
-      <x-slot name="footer">
-        <x-secondary-button type="button" wire:click="$set('editingAttendance', false)" wire:loading.attr="disabled">
-          Batal
-        </x-secondary-button>
-        <x-button class="ml-2" type="submit" wire:loading.attr="disabled">
-          Simpan
-        </x-button>
-      </x-slot>
-    </form>
+      </form>
+    </x-slot>
+    <x-slot name="footer">
+      <x-secondary-button type="button" wire:click="$set('editingAttendance', false)" wire:loading.attr="disabled">
+        Batal
+      </x-secondary-button>
+      <x-button class="ml-2" type="submit" form="attendance-edit" wire:loading.attr="disabled">
+        Simpan
+      </x-button>
+    </x-slot>
   </x-dialog-modal>
 
   <x-attendance-detail-modal :current-attendance="$currentAttendance" />

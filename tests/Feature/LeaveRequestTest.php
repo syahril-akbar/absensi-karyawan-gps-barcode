@@ -168,3 +168,40 @@ test('leave request belongs to user', function () {
     expect($leaveRequest->user->id)->toBe($this->user->id);
     expect($leaveRequest->user->name)->toBe($this->user->name);
 });
+
+test('employee cannot submit overlapping leave request when pending or approved', function () {
+    LeaveRequest::create([
+        'user_id' => $this->user->id,
+        'type' => 'excused',
+        'from_date' => '2026-07-01',
+        'to_date' => '2026-07-03',
+        'note' => 'Izin pertama',
+        'status' => 'pending',
+    ]);
+
+    $response = actingAs($this->user)->post(route('store-leave-request'), [
+        'status' => 'sick',
+        'note' => 'Izin kedua tumpang tindih',
+        'from' => '2026-07-02',
+        'to' => '2026-07-04',
+    ]);
+
+    $response->assertSessionHas('flash.bannerStyle', 'danger');
+    expect(LeaveRequest::where('user_id', $this->user->id)->count())->toBe(1);
+});
+
+test('employee can submit leave request with same from and to date', function () {
+    $response = actingAs($this->user)->post(route('store-leave-request'), [
+        'status' => 'sick',
+        'note' => 'Sakit 1 hari',
+        'from' => '2026-07-10',
+        'to' => '2026-07-10',
+    ]);
+
+    $response->assertRedirect(route('home'));
+    $this->assertDatabaseHas('leave_requests', [
+        'user_id' => $this->user->id,
+        'from_date' => '2026-07-10',
+        'to_date' => '2026-07-10',
+    ]);
+});

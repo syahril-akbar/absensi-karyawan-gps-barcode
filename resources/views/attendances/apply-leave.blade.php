@@ -17,7 +17,9 @@
     </div>
 
     <div class="mt-6 rounded-3xl bg-white p-6 shadow-sm dark:bg-gray-800">
-      <form action="{{ route('store-leave-request') }}" method="post" enctype="multipart/form-data">
+      <form action="{{ route('store-leave-request') }}" method="post" enctype="multipart/form-data"
+        x-data="{ submitting: false }"
+        @submit="if (submitting) { $event.preventDefault(); return false; } submitting = true;">
         @csrf
 
         <!-- Tipe Pengajuan -->
@@ -58,7 +60,7 @@
         <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <x-label for="from" value="Tanggal mulai" />
-            <x-input type="date" min="{{ date('Y-m-d') }}" value="{{ date('Y-m-d') }}" id="from"
+            <x-input type="date" min="{{ date('Y-m-d') }}" value="{{ old('from', date('Y-m-d')) }}" id="from"
               class="mt-2 block w-full rounded-xl" name="from" required />
             @error('from')
               <x-input-error for="from" class="mt-2" message="{{ $message }}" />
@@ -66,7 +68,7 @@
           </div>
           <div>
             <x-label for="to" value="Tanggal berakhir (Opsional)" />
-            <x-input type="date" id="to" min="{{ date('Y-m-d') }}" class="mt-2 block w-full rounded-xl"
+            <x-input type="date" id="to" min="{{ date('Y-m-d') }}" value="{{ old('to') }}" class="mt-2 block w-full rounded-xl"
               name="to" />
             @error('to')
               <x-input-error for="to" class="mt-2" message="{{ $message }}" />
@@ -132,9 +134,22 @@
         <input type="hidden" id="lng" name="lng" value="{{ $attendance?->longitude }}">
 
         <div class="mt-8 flex items-center justify-end">
-          <x-button class="ms-4 w-full justify-center sm:w-auto">
-            <x-heroicon-o-check class="mr-2 h-4 w-4" />
-            {{ __('Save') }}
+          <x-button class="ms-4 w-full justify-center sm:w-auto" ::disabled="submitting" x-bind:class="{ 'opacity-50 cursor-not-allowed': submitting }">
+            <template x-if="!submitting">
+              <span class="inline-flex items-center">
+                <x-heroicon-o-check class="mr-2 h-4 w-4" />
+                {{ __('Save') }}
+              </span>
+            </template>
+            <template x-if="submitting">
+              <span class="inline-flex items-center">
+                <svg class="mr-2 h-4 w-4 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+                Menyimpan...
+              </span>
+            </template>
           </x-button>
         </div>
       </form>

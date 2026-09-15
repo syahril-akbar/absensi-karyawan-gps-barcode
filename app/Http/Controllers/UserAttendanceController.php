@@ -24,11 +24,29 @@ class UserAttendanceController extends Controller
             'status' => ['required', 'in:excused,sick'],
             'note' => ['required', 'string', 'max:255'],
             'from' => ['required', 'date'],
-            'to' => ['nullable', 'date', 'after:from'],
+            'to' => ['nullable', 'date', 'after_or_equal:from'],
             'attachment' => ['nullable', 'file', 'max:3072'],
             'lat' => ['nullable', 'numeric'],
             'lng' => ['nullable', 'numeric'],
         ]);
+
+        $fromDate = $request->from;
+        $toDate = $request->to ?? $request->from;
+
+        $hasOverlap = LeaveRequest::where('user_id', Auth::user()->id)
+            ->whereIn('status', ['pending', 'approved'])
+            ->where(function ($query) use ($fromDate, $toDate) {
+                $query->where('from_date', '<=', $toDate)
+                    ->where('to_date', '>=', $fromDate);
+            })
+            ->exists();
+
+        if ($hasOverlap) {
+            return redirect()->back()
+                ->withInput()
+                ->with('flash.banner', 'Anda sudah memiliki pengajuan izin yang sedang diproses atau telah disetujui pada rentang tanggal tersebut.')
+                ->with('flash.bannerStyle', 'danger');
+        }
 
         try {
             $newAttachment = null;
@@ -42,8 +60,8 @@ class UserAttendanceController extends Controller
             LeaveRequest::create([
                 'user_id' => Auth::user()->id,
                 'type' => $request->status,
-                'from_date' => $request->from,
-                'to_date' => $request->to ?? $request->from,
+                'from_date' => $fromDate,
+                'to_date' => $toDate,
                 'note' => $request->note,
                 'attachment' => $newAttachment,
                 'latitude' => $request->lat ? doubleval($request->lat) : null,
@@ -55,6 +73,7 @@ class UserAttendanceController extends Controller
                 ->with('flash.banner', 'Pengajuan izin berhasil dikirim, menunggu persetujuan admin.');
         } catch (\Throwable $th) {
             return redirect()->back()
+                ->withInput()
                 ->with('flash.banner', $th->getMessage())
                 ->with('flash.bannerStyle', 'danger');
         }

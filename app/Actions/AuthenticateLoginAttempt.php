@@ -34,7 +34,7 @@ class AuthenticateLoginAttempt
             return $user;
         }
 
-        if ($deviceToken && $user->device_token !== $deviceToken) {
+        if ($user->device_token !== $deviceToken) {
             throw ValidationException::withMessages([
                 'email' => 'Perangkat ini tidak terdaftar. Hubungi administrator untuk mereset perangkat Anda.',
             ]);

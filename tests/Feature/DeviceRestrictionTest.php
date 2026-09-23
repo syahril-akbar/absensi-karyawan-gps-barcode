@@ -66,6 +66,23 @@ test('different device token throws validation exception', function () {
     $auth($request);
 });
 
+test('null or empty device token throws validation exception when token is registered', function ($token) {
+    $this->user->update(['device_token' => 'original-device-uuid']);
+
+    $request = new Request([
+        'email' => $this->user->email,
+        'password' => 'password',
+        'device_token' => $token,
+    ]);
+
+    $auth = new AuthenticateLoginAttempt();
+
+    $this->expectException(\Illuminate\Validation\ValidationException::class);
+    $this->expectExceptionMessage('Perangkat ini tidak terdaftar');
+
+    $auth($request);
+})->with([null, '']);
+
 test('admin can reset user device token', function () {
     $admin = User::factory()->create(['group' => 'admin']);
     $this->user->update(['device_token' => 'old-device-uuid']);

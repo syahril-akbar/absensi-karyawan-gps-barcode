@@ -1,6 +1,5 @@
-const CACHE_NAME = 'absensi-pwa-v1';
+const CACHE_NAME = 'absensi-pwa-v2';
 const PRECACHE_URLS = [
-  '/',
   '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
@@ -32,17 +31,28 @@ self.addEventListener('fetch', (event) => {
   // Only handle same-origin requests
   if (url.origin !== self.location.origin) return;
 
-  // Navigation: network-first, fallback to cached shell for offline
+  // Navigation: network-first, never cache auth pages (avoids stale CSRF token)
   if (request.mode === 'navigate') {
+    if (
+      url.pathname === '/login' ||
+      url.pathname === '/register' ||
+      url.pathname.startsWith('/password') ||
+      url.pathname.startsWith('/reset-password')
+    ) {
+      return; // Always network-only for auth
+    }
+
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          if (response.ok && response.status === 200) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          }
           return response;
         })
         .catch(() =>
-          caches.match(request).then((cached) => cached || caches.match('/'))
+          caches.match(request).then((cached) => cached || new Response('Offline', { status: 503, statusText: 'Offline' }))
         )
     );
     return;

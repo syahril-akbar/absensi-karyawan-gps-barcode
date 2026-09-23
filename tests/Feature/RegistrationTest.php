@@ -22,6 +22,8 @@ test('registration screen cannot be rendered if support is disabled', function (
 }, 'Registration support is enabled.');
 
 test('new users can register', function () {
+    \App\Support\Settings::set('registration.enabled', '1');
+
     $response = post('/register', [
         'name' => 'Test User',
         'nip' => '1234',
@@ -36,7 +38,7 @@ test('new users can register', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect('/dashboard');
+    $response->assertRedirect('/');
 })->skip(function () {
     return !Features::enabled(Features::registration());
 }, 'Registration support is not enabled.');

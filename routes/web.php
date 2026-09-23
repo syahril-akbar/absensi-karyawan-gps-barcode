@@ -14,9 +14,13 @@ use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 
 Route::get('/', function () {
-    // return view('welcome');
+    if (Auth::check()) {
+        return Auth::user()->isAdmin ? redirect('/admin') : redirect('/home');
+    }
     return redirect('/login');
 });
+
+Route::get('/dashboard', fn () => redirect('/'));
 
 Route::get('/manifest.json', [PwaController::class, 'manifest'])->name('pwa.manifest');
 
@@ -25,7 +29,7 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/', fn () => Auth::user()->isAdmin ? redirect('/admin') : redirect('/home'));
+
 
     // USER AREA
     Route::middleware('user')->group(function () {

@@ -22,5 +22,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prepend(\App\Http\Middleware\ForceHttps::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, $request) {
+            if ($e->getStatusCode() === 419) {
+                return redirect()->route('login')->with('status', 'Sesi Anda telah kedaluwarsa. Silakan coba login kembali.');
+            }
+        });
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {
+            return redirect()->route('login')->with('status', 'Sesi Anda telah kedaluwarsa. Silakan coba login kembali.');
+        });
     })->create();

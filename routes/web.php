@@ -118,6 +118,11 @@ Route::middleware([
             return view('admin.settings');
         })->name('admin.settings');
 
+        // Office Settings
+        Route::get('/office-settings', function () {
+            return view('admin.office-settings');
+        })->name('admin.office-settings');
+
         Route::post('/users/import', [ImportExportController::class, 'importUsers'])
             ->name('admin.users.import');
         Route::post('/attendances/import', [ImportExportController::class, 'importAttendances'])

@@ -123,4 +123,21 @@ class User extends Authenticatable
     {
         return $this->hasMany(Attendance::class);
     }
+
+    public function isProfileComplete(): bool
+    {
+        if ($this->group !== 'user') {
+            return true;
+        }
+
+        return !empty($this->phone)
+            && !empty($this->gender)
+            && !empty($this->address)
+            && !empty($this->city)
+            && !empty($this->birth_date)
+            && !empty($this->birth_place)
+            && !empty($this->division_id)
+            && !empty($this->job_title_id)
+            && !empty($this->education_id);
+    }
 }

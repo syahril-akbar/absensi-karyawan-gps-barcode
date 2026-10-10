@@ -85,7 +85,7 @@
         <thead class="bg-indigo-50 dark:bg-gray-900">
           <tr>
             <th scope="col"
-              class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-300">
+              class="{{ !$showUserDetail ? 'sticky left-0 z-20 bg-indigo-50 dark:bg-gray-900 shadow-sm' : '' }} px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-300">
               {{ $showUserDetail ? __('Name') : __('Name') . '/' . __('Date') }}
             </th>
             @if ($showUserDetail)
@@ -140,9 +140,19 @@
               </th>
             @endif
             @if (!$isPerDayFilter)
-              @foreach (['H', 'T', 'I', 'S', 'TT', 'A'] as $_st)
-                <th scope="col"
-                  class="text-nowrap border-l border-gray-200 px-1 py-3 text-center text-xs font-bold text-gray-500 dark:border-gray-700 dark:text-gray-300">
+              @php
+                $rekapLabels = [
+                    'H' => 'Hadir Tepat Waktu',
+                    'T' => 'Terlambat Masuk',
+                    'I' => 'Izin Resmi',
+                    'S' => 'Izin Sakit',
+                    'TT' => 'Tanpa Tap Pulang',
+                    'A' => 'Alpa / Tanpa Keterangan',
+                ];
+              @endphp
+              @foreach ($rekapLabels as $_st => $_lbl)
+                <th scope="col" title="{{ $_lbl }}"
+                  class="text-nowrap border-l border-indigo-200 bg-indigo-100/60 px-1 py-3 text-center text-xs font-bold text-indigo-900 dark:border-gray-700 dark:bg-indigo-950/60 dark:text-indigo-300">
                   {{ $_st }}
                 </th>
               @endforeach
@@ -164,7 +174,7 @@
             @endphp
             <tr wire:key="{{ $employee->id }}" class="group">
               {{-- Detail karyawan --}}
-              <td class="{{ $class }} text-nowrap group-hover:bg-gray-50 dark:group-hover:bg-gray-700">
+              <td class="{{ !$showUserDetail ? 'sticky left-0 z-10 bg-white group-hover:bg-gray-50 dark:bg-gray-800 dark:group-hover:bg-gray-700 shadow-sm' : '' }} {{ $class }} text-nowrap group-hover:bg-gray-50 dark:group-hover:bg-gray-700">
                 {{ $employee->name }}
               </td>
               @if ($showUserDetail)
@@ -332,6 +342,22 @@
         </div>
         <p class="mt-4 text-sm font-semibold text-gray-700 dark:text-gray-200">Tidak ada data</p>
         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Coba ubah filter atau kata kunci pencarian.</p>
+      </div>
+    @endif
+    {{-- Legenda Simbol (Hanya tampil saat filter mingguan atau bulanan) --}}
+    @if (!$isPerDayFilter)
+      <div class="border-t border-gray-100 bg-gray-50/80 px-6 py-4 dark:border-gray-700 dark:bg-gray-800/80">
+        <p class="mb-2 text-xs font-bold text-gray-700 dark:text-gray-300">Keterangan Simbol Status Kehadiran:</p>
+        <div class="grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-400 sm:grid-cols-4 lg:grid-cols-8">
+          <div class="flex items-center gap-2"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded font-bold text-green-700 bg-green-100 dark:bg-green-900/60 dark:text-green-300">H</span> Hadir</div>
+          <div class="flex items-center gap-2"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded font-bold text-amber-700 bg-yellow-100 dark:bg-yellow-900/60 dark:text-yellow-300">T</span> Terlambat</div>
+          <div class="flex items-center gap-2"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded font-bold text-blue-700 bg-blue-100 dark:bg-blue-900/60 dark:text-blue-300">I</span> Izin Resmi</div>
+          <div class="flex items-center gap-2"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded font-bold text-purple-700 bg-purple-100 dark:bg-purple-900/60 dark:text-purple-300">S</span> Sakit</div>
+          <div class="flex items-center gap-2"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded font-bold text-orange-700 bg-orange-100 dark:bg-orange-900/60 dark:text-orange-300">TT</span> Tanpa Tap Out</div>
+          <div class="flex items-center gap-2"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded font-bold text-red-700 bg-red-100 dark:bg-red-900/60 dark:text-red-300">A</span> Alpa</div>
+          <div class="flex items-center gap-2"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded font-bold text-rose-700 bg-rose-100 dark:bg-rose-900/60 dark:text-rose-300">L</span> Hari Libur</div>
+          <div class="flex items-center gap-2"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded font-bold text-gray-500 bg-gray-200 dark:bg-gray-700 dark:text-gray-400">-</span> Belum Terlaksana</div>
+        </div>
       </div>
     @endif
     <div class="border-t border-gray-100 px-5 py-4 dark:border-gray-700">

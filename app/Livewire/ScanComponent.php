@@ -23,6 +23,8 @@ class ScanComponent extends Component
     public bool $isHolidayToday = false;
     public ?string $holidayName = null;
 
+    protected $listeners = ['profile-completed' => '$refresh'];
+
     public function resetError()
     {
         $this->dispatch('reset-error');
@@ -31,6 +33,10 @@ class ScanComponent extends Component
 
     public function scan(string $barcode)
     {
+        if (Auth::check() && !Auth::user()->isProfileComplete()) {
+            return __('Silakan lengkapi profil Anda terlebih dahulu sebelum melakukan absensi.');
+        }
+
         if ($this->isHolidayToday) {
             return __('Hari ini libur');
         }

@@ -65,6 +65,12 @@
 
   <x-sigsegv-core-dumped />
 
+  @auth
+    @if (Auth::user()->is_user && !request()->routeIs('profile.show'))
+      <livewire:complete-profile-modal-component />
+    @endif
+  @endauth
+
   @stack('modals')
 
   @livewireScripts

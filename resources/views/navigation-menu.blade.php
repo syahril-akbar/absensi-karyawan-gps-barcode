@@ -75,6 +75,10 @@
                   <x-heroicon-o-cog-6-tooth class="mr-2 h-4 w-4 text-gray-400" />
                   Pengaturan Umum
                 </x-dropdown-link>
+                <x-dropdown-link href="{{ route('admin.office-settings') }}" :active="request()->routeIs('admin.office-settings')">
+                  <x-heroicon-o-building-office-2 class="mr-2 h-4 w-4 text-gray-400" />
+                  Informasi Kantor
+                </x-dropdown-link>
                 <x-dropdown-link href="{{ route('admin.pwa-settings') }}" :active="request()->routeIs('admin.pwa-settings')">
                   <x-heroicon-o-device-phone-mobile class="mr-2 h-4 w-4 text-gray-400" />
                   Pengaturan PWA
@@ -302,6 +306,9 @@
         </div>
         <x-responsive-nav-link href="{{ route('admin.settings') }}" :active="request()->routeIs('admin.settings')">
           <span class="flex items-center gap-3"><x-heroicon-o-cog-6-tooth class="h-5 w-5 shrink-0" />Pengaturan Umum</span>
+        </x-responsive-nav-link>
+        <x-responsive-nav-link href="{{ route('admin.office-settings') }}" :active="request()->routeIs('admin.office-settings')">
+          <span class="flex items-center gap-3"><x-heroicon-o-building-office-2 class="h-5 w-5 shrink-0" />Informasi Kantor</span>
         </x-responsive-nav-link>
         <x-responsive-nav-link href="{{ route('admin.pwa-settings') }}" :active="request()->routeIs('admin.pwa-settings')">
           <span class="flex items-center gap-3"><x-heroicon-o-device-phone-mobile class="h-5 w-5 shrink-0" />Pengaturan PWA</span>

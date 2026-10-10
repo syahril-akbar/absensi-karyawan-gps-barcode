@@ -62,6 +62,9 @@
       <x-sidebar-link href="{{ route('admin.settings') }}" :active="request()->routeIs('admin.settings')" label="Pengaturan Umum">
         <x-slot name="icon"><x-heroicon-o-cog-6-tooth class="h-5 w-5 shrink-0" /></x-slot>
       </x-sidebar-link>
+      <x-sidebar-link href="{{ route('admin.office-settings') }}" :active="request()->routeIs('admin.office-settings')" label="Informasi Kantor">
+        <x-slot name="icon"><x-heroicon-o-building-office-2 class="h-5 w-5 shrink-0" /></x-slot>
+      </x-sidebar-link>
       <x-sidebar-link href="{{ route('admin.pwa-settings') }}" :active="request()->routeIs('admin.pwa-settings')" label="Pengaturan PWA">
         <x-slot name="icon"><x-heroicon-o-device-phone-mobile class="h-5 w-5 shrink-0" /></x-slot>
       </x-sidebar-link>

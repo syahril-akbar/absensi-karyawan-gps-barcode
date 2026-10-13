@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire;
 
 use App\Models\Division;
@@ -16,21 +18,30 @@ class CompleteProfileModalComponent extends Component
     public bool $isOpen = false;
 
     public string $nip = '';
+
     public string $phone = '';
+
     public string $gender = '';
+
     public string $birth_date = '';
+
     public string $birth_place = '';
+
     public string $address = '';
+
     public string $city = '';
+
     public ?string $division_id = null;
+
     public ?string $job_title_id = null;
+
     public ?string $education_id = null;
 
     public function mount(): void
     {
         $user = Auth::user();
 
-        if ($user && $user->is_user && !$user->isProfileComplete()) {
+        if ($user && $user->is_user && ! $user->isProfileComplete()) {
             $this->isOpen = true;
             $this->nip = $user->nip ?? '';
             $this->phone = $user->phone ?? '';

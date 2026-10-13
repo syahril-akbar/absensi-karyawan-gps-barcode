@@ -14,10 +14,10 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasUlids;
     use HasApiTokens;
     use HasFactory;
     use HasProfilePhoto;
+    use HasUlids;
     use Notifiable;
     use TwoFactorAuthenticatable;
 
@@ -101,7 +101,7 @@ class User extends Authenticatable
 
     final public function getIsNotAdminAttribute(): bool
     {
-        return !$this->isAdmin;
+        return ! $this->isAdmin;
     }
 
     public function education()
@@ -130,14 +130,14 @@ class User extends Authenticatable
             return true;
         }
 
-        return !empty($this->phone)
-            && !empty($this->gender)
-            && !empty($this->address)
-            && !empty($this->city)
-            && !empty($this->birth_date)
-            && !empty($this->birth_place)
-            && !empty($this->division_id)
-            && !empty($this->job_title_id)
-            && !empty($this->education_id);
+        return ! empty($this->phone)
+            && ! empty($this->gender)
+            && ! empty($this->address)
+            && ! empty($this->city)
+            && ! empty($this->birth_date)
+            && ! empty($this->birth_place)
+            && ! empty($this->division_id)
+            && ! empty($this->job_title_id)
+            && ! empty($this->education_id);
     }
 }

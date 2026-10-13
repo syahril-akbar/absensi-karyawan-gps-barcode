@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Admin;
 
 use App\Support\Settings;
@@ -14,15 +16,23 @@ class OfficeSettingsComponent extends Component
     use WithFileUploads;
 
     public string $kementerian = '';
+
     public string $eselon1 = '';
+
     public string $nama = '';
+
     public string $alamat = '';
+
     public string $kota = '';
+
     public string $penandatangan_jabatan = '';
+
     public string $penandatangan_nama = '';
+
     public string $penandatangan_nip = '';
 
     public $logo = null;
+
     public ?string $current_logo = null;
 
     public function mount(): void

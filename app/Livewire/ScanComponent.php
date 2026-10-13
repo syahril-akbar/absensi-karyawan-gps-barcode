@@ -2,25 +2,33 @@
 
 namespace App\Livewire;
 
+use App\Helpers;
 use App\Models\Attendance;
 use App\Models\Barcode;
 use App\Models\Holiday;
 use App\Models\Shift;
-use Illuminate\Support\Facades\Auth;
-use Livewire\Component;
 use Ballen\Distical\Calculator as DistanceCalculator;
 use Ballen\Distical\Entities\LatLong;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class ScanComponent extends Component
 {
     public ?Attendance $attendance = null;
+
     public $shift_id = null;
+
     public $shifts = null;
+
     public ?array $currentLiveCoords = null;
+
     public array $scanResult = []; // ['type' => 'in'|'out', 'time' => 'H:i:s', 'status' => '...']
+
     public bool $isAbsence = false;
+
     public bool $isHolidayToday = false;
+
     public ?string $holidayName = null;
 
     protected $listeners = ['profile-completed' => '$refresh'];
@@ -30,10 +38,9 @@ class ScanComponent extends Component
         $this->dispatch('reset-error');
     }
 
-
     public function scan(string $barcode)
     {
-        if (Auth::check() && !Auth::user()->isProfileComplete()) {
+        if (Auth::check() && ! Auth::user()->isProfileComplete()) {
             return __('Silakan lengkapi profil Anda terlebih dahulu sebelum melakukan absensi.');
         }
 
@@ -45,7 +52,6 @@ class ScanComponent extends Component
             return __('Invalid location');
         }
 
-
         // Otomatis pakai shift yang benar untuk hari ini jika lupa/keliru memilih.
         $this->shift_id = $this->resolveShiftIdForToday($this->shift_id);
 
@@ -55,7 +61,7 @@ class ScanComponent extends Component
 
         /** @var Barcode */
         $barcode = Barcode::firstWhere('value', $barcode);
-        if (!Auth::check() || !$barcode) {
+        if (! Auth::check() || ! $barcode) {
             return 'Invalid barcode';
         }
 
@@ -63,7 +69,7 @@ class ScanComponent extends Component
         $userLocation = new LatLong($this->currentLiveCoords[0], $this->currentLiveCoords[1]);
 
         if (($distance = $this->calculateDistance($userLocation, $barcodeLocation)) > $barcode->radius) {
-            return __('Location out of range') . ": $distance" . "m. Max: $barcode->radius" . "m";
+            return __('Location out of range').": $distance"."m. Max: $barcode->radius".'m';
         }
 
         /** @var Attendance */
@@ -72,7 +78,7 @@ class ScanComponent extends Component
             ->where('barcode_id', $barcode->id)
             ->first();
 
-        if (!$existingAttendance) {
+        if (! $existingAttendance) {
             $attendance = $this->createAttendance($barcode);
             $this->scanResult = [
                 'type' => 'in',
@@ -83,7 +89,7 @@ class ScanComponent extends Component
             $attendance = $existingAttendance;
 
             // Sudah absen keluar: tolak scan berikutnya, jangan timpa time_out.
-            if (!is_null($attendance->time_out)) {
+            if (! is_null($attendance->time_out)) {
                 return __('Absen keluar sudah tercatat hari ini.');
             }
 
@@ -109,6 +115,7 @@ class ScanComponent extends Component
         if ($attendance) {
             $this->setAttendance($attendance->fresh());
             Attendance::clearUserAttendanceCache(Auth::user(), Carbon::parse($attendance->date));
+
             return $this->scanResult; // stempel hasil: ['type','time','status']
         }
     }
@@ -117,6 +124,7 @@ class ScanComponent extends Component
     {
         $distanceCalculator = new DistanceCalculator($a, $b);
         $distanceInMeter = floor($distanceCalculator->get()->asKilometres() * 1000); // convert to meters
+
         return $distanceInMeter;
     }
 
@@ -129,6 +137,7 @@ class ScanComponent extends Component
         /** @var Shift */
         $shift = Shift::find($this->shift_id);
         $status = $shift?->start_time && $now->copy()->setTimeFromTimeString($shift->start_time)->endOfMinute()->lt($now) ? 'late' : 'present';
+
         return Attendance::create([
             'user_id' => Auth::user()->id,
             'barcode_id' => $barcode->id,
@@ -136,8 +145,8 @@ class ScanComponent extends Component
             'time_in' => $timeIn,
             'time_out' => null,
             'shift_id' => $shift->id,
-            'latitude' => doubleval($this->currentLiveCoords[0]),
-            'longitude' => doubleval($this->currentLiveCoords[1]),
+            'latitude' => floatval($this->currentLiveCoords[0]),
+            'longitude' => floatval($this->currentLiveCoords[1]),
             'status' => $status,
             'note' => null,
             'attachment' => null,
@@ -148,7 +157,7 @@ class ScanComponent extends Component
     {
         $this->attendance = $attendance;
         $this->shift_id = $attendance->shift_id;
-        $this->isAbsence = !in_array($attendance->status, ['present', 'late', 'incomplete']);
+        $this->isAbsence = ! in_array($attendance->status, ['present', 'late', 'incomplete']);
     }
 
     public function getAttendance()
@@ -156,6 +165,7 @@ class ScanComponent extends Component
         if (is_null($this->attendance)) {
             return null;
         }
+
         return [
             'time_in' => $this->attendance?->time_in?->format('H:i:s'),
             'time_out' => $this->attendance?->time_out?->format('H:i:s'),
@@ -165,7 +175,7 @@ class ScanComponent extends Component
     public function mount()
     {
         $this->shifts = Shift::all();
-        $this->isHolidayToday = \App\Helpers::isHoliday(Carbon::now());
+        $this->isHolidayToday = Helpers::isHoliday(Carbon::now());
         $holiday = Holiday::where('date', Carbon::now()->toDateString())->first();
         $this->holidayName = $this->isHolidayToday ? ($holiday?->name ?? __('Weekend')) : null;
 
@@ -197,7 +207,7 @@ class ScanComponent extends Component
             ->sortBy(fn (Shift $s) => abs($this->minutesSinceMidnight($s->start_time) - $nowMinutes))
             ->first();
 
-        $specific = $shifts->filter(fn (Shift $s) => !empty($s->days) && in_array($day, $s->days));
+        $specific = $shifts->filter(fn (Shift $s) => ! empty($s->days) && in_array($day, $s->days));
 
         if ($specific->isNotEmpty()) {
             if ($selectedId !== null && $specific->contains('id', $selectedId)) {

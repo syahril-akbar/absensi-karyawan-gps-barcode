@@ -85,7 +85,7 @@
         <thead class="bg-indigo-50 dark:bg-gray-900">
           <tr>
             <th scope="col"
-              class="{{ !$showUserDetail ? 'sticky left-0 z-20 bg-indigo-50 dark:bg-gray-900 shadow-sm' : '' }} px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-300">
+              class="sticky left-0 z-20 bg-indigo-50 dark:bg-gray-900 shadow-sm px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-gray-600 dark:text-gray-300">
               {{ $showUserDetail ? __('Name') : __('Name') . '/' . __('Date') }}
             </th>
             @if ($showUserDetail)
@@ -174,7 +174,7 @@
             @endphp
             <tr wire:key="{{ $employee->id }}" class="group">
               {{-- Detail karyawan --}}
-              <td class="{{ !$showUserDetail ? 'sticky left-0 z-10 bg-white group-hover:bg-gray-50 dark:bg-gray-800 dark:group-hover:bg-gray-700 shadow-sm' : '' }} {{ $class }} text-nowrap group-hover:bg-gray-50 dark:group-hover:bg-gray-700">
+              <td class="sticky left-0 z-10 bg-white group-hover:bg-gray-50 dark:bg-gray-800 dark:group-hover:bg-gray-700 shadow-sm {{ $class }} text-nowrap">
                 {{ $employee->name }}
               </td>
               @if ($showUserDetail)
